@@ -3,9 +3,11 @@ package dockalyzer.tools.githubminer;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import com.google.common.collect.Iterables;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
@@ -23,9 +25,20 @@ public class GitHistoryFilter {
         Git git = new Git(getRepository(localPath));
         List<RevCommit> logs = new ArrayList<>();
         Iterable<RevCommit> iterableLogs = git.log().addPath("Dockerfile").call();
-        iterableLogs.forEach(logs::add);
+
+        ArrayList<RevCommit> copy = toArrayList(iterableLogs.iterator());
         git.close();
-        return logs;
+
+        return copy;
+    }
+    public static <RevCommit> ArrayList<RevCommit> toArrayList(final Iterator<RevCommit> iterator) {
+        return StreamSupport
+                .stream(
+                        Spliterators
+                                .spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
+                .collect(
+                        Collectors.toCollection(ArrayList::new)
+                );
     }
 
     public Repository getRepository(String localPath) throws IOException {

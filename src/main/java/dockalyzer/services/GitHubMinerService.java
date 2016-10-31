@@ -20,14 +20,14 @@ import java.io.Reader;
  */
 public class GitHubMinerService {
 
-    public GithubRepository getGitHubRepository(String path){
+    public static GithubRepository getGitHubRepository(String path){
         Gson gson = new Gson();
         GithubRepository repository = gson.fromJson(getJsonRepository(path).toString(),GithubRepository.class);
         return repository;
     }
 
 
-    public JSONObject getJsonRepository(String path){
+    public static JSONObject getJsonRepository(String path){
         JSONObject json = null;
         try {
             json = readJsonFromUrl(path);
