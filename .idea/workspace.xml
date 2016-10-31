@@ -2,30 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1292e7e4-7d80-4715-842d-87d6656474ff" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.settings/org.eclipse.jpt.core.prefs" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.settings/org.eclipse.wst.common.project.facet.core.prefs.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.settings/org.eclipse.wst.common.project.facet.core.xml" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/app/Student.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/process/extract/DateExtractor.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/process/input/DataInputReader.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/services/DatabaseService.java" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/resources/hibernate.cfg.xml" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/META-INF/persistence.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/process/extract/Date.java" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dockalyzer.iml" afterPath="$PROJECT_DIR$/.idea/dockalyzer.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.project" afterPath="$PROJECT_DIR$/.project" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.settings/org.eclipse.jdt.core.prefs" afterPath="$PROJECT_DIR$/.settings/org.eclipse.jdt.core.prefs" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/app/App.java" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/app/App.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/process/output/ExportDates.java" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/process/output/ExportDates.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/services/GitHubMinerService.java" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/services/GitHubMinerService.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/tools/githubminer/CommitProcessor.java" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/tools/githubminer/CommitProcessor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/tools/githubminer/DiffProcessor.java" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/tools/githubminer/DiffProcessor.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/dockalyzer/tools/githubminer/GitHistoryFilter.java" afterPath="$PROJECT_DIR$/src/main/java/dockalyzer/tools/githubminer/GitHistoryFilter.java" />
     </list>
     <ignored path="dockalyzer.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -77,7 +54,7 @@
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="436">
-              <caret line="66" column="17" selection-start-line="66" selection-start-column="17" selection-end-line="66" selection-end-column="17" />
+              <caret line="68" column="17" selection-start-line="68" selection-start-column="17" selection-end-line="68" selection-end-column="17" />
               <folding />
             </state>
           </provider>
@@ -817,12 +794,12 @@
       <workItem from="1477827251470" duration="797000" />
       <workItem from="1477828123770" duration="7000" />
       <workItem from="1477828495919" duration="4830000" />
-      <workItem from="1477842788526" duration="30882000" />
+      <workItem from="1477842788526" duration="31034000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="36766000" />
+    <option name="totallyTimeSpent" value="36918000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1528" height="916" extended-state="6" />
@@ -1299,7 +1276,7 @@
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="436">
-          <caret line="66" column="17" selection-start-line="66" selection-start-column="17" selection-end-line="66" selection-end-column="17" />
+          <caret line="68" column="17" selection-start-line="68" selection-start-column="17" selection-end-line="68" selection-end-column="17" />
           <folding />
         </state>
       </provider>
