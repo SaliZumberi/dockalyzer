@@ -1,45 +1,20 @@
 package dockalyzer.app;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import com.gitblit.models.PathModel;
-import com.gitblit.utils.JGitUtils;
 import dockalyzer.services.DatabaseService;
+import dockalyzer.tools.dockerparser.DockerParser;
 import dockalyzer.tools.githubminer.CommitProcessor;
 import dockalyzer.tools.githubminer.DiffProcessor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 
-import org.eclipse.jgit.revwalk.RevTree;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.AbstractTreeIterator;
-import org.eclipse.jgit.treewalk.CanonicalTreeParser;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilter;
-
 import dockalyzer.models.GithubRepository;
-import dockalyzer.services.BigQueryService;
 import dockalyzer.services.GitHubMinerService;
-import dockalyzer.tools.csvutil.CSVUtils;
 import dockalyzer.tools.githubminer.GitCloner;
 import dockalyzer.tools.githubminer.GitHistoryFilter;
-
-import org.hibernate.*;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.service.ServiceRegistry;
 
 public class App {
 
@@ -52,10 +27,6 @@ public class App {
 
     public App() {
     }
-
-
-
-
 
     public static void main(String[] args) throws Exception {
         //String repo_name = "dockerfile/redis";
@@ -70,6 +41,8 @@ public class App {
         App repositoryMinerApp = new App();
 
         GithubRepository githubRepo = GitHubMinerService.getGitHubRepository(GITAPI + REPOS + repo_name);
+
+        System.out.println("REPO INFO" + githubRepo.name + githubRepo.created_at.toString());
 
         String repoFolderName = LOCAL_REPO_FOLDER + String.valueOf(githubRepo.id);
         String repoFolderNameDotGit = repoFolderName +"\\.git";
@@ -104,8 +77,11 @@ public class App {
 
         //DiffProcessor.showDiffFilesOfTwoCommits(historyOfFile.get(0), historyOfFile.get(0), repository, git);
 
-        CommitProcessor.getChangedFilesWithinCommit(historyOfFile,repository);
+    //    CommitProcessor.getChangedFilesWithinCommit(historyOfFile,repository);
 
+        File dockerFlatFile = DockerParser.findFile("Dockerfile",new File("dockerfiles\\"));
+        DockerParser.printLines(dockerFlatFile);
+        DockerParser.readLines(dockerFlatFile);
     }
 
     public static void showDiffFilesOfHistory(List<RevCommit> historyOfFile, Repository repository, Git git ) throws IOException, GitAPIException {
