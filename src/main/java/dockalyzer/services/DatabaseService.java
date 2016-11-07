@@ -1,6 +1,7 @@
 package dockalyzer.services;
 
 import dockalyzer.app.Student;
+import dockalyzer.models.Frage1;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -9,6 +10,7 @@ import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.service.ServiceRegistry;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,6 +44,34 @@ public class DatabaseService {
         SESSION_FACTORY = config.buildSessionFactory(registry);
     }
 
+    public static void addData(Date docker, Date project, Date difference) {
+        // Create a session
+        Session session = SESSION_FACTORY.openSession();
+        Transaction transaction = null;
+        try {
+            // Begin a transaction
+            transaction = session.beginTransaction();
+            Frage1 stu = new Frage1();
+            //stu.setId(id);
+            stu.setProjectDate(project);
+            stu.setDockerfileDate(docker);
+            stu.setDockerfileDate(difference);
+            // Save the student
+            session.save(stu);
+            // Commit the transaction
+            transaction.commit();
+        } catch (HibernateException ex) {
+            // If there are any exceptions, roll back the changes
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            // Print the Exception
+            ex.printStackTrace();
+        } finally {
+            // Close the session
+            session.close();
+        }
+    }
 
     /**
      * Create a new Student.

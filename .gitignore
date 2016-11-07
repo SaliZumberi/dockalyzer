@@ -54,6 +54,10 @@ buildNumber.properties
 # IntelliJ
 /out/
 
+/bigquerydata
+
+GitHubMinerService.java
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 

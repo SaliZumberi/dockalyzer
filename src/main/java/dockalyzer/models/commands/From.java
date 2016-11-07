@@ -8,6 +8,7 @@ public class From extends Instruction{
     double imageVersionNumber;
     String imageVersionString;
     String digest;
+
     boolean isAutomated;
     boolean isOfficial;
 

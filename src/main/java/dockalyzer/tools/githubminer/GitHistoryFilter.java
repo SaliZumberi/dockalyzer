@@ -21,10 +21,10 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 
 public class GitHistoryFilter {
 
-    public List<RevCommit> getDockerHistory(String localPath) throws IOException, NoHeadException, GitAPIException {
+    public List<RevCommit> getDockerHistory(String localPath, String dockerPath) throws IOException, NoHeadException, GitAPIException {
         Git git = new Git(getRepository(localPath));
         List<RevCommit> logs = new ArrayList<>();
-        Iterable<RevCommit> iterableLogs = git.log().addPath("Dockerfile").call();
+        Iterable<RevCommit> iterableLogs = git.log().addPath(dockerPath).call();
 
         ArrayList<RevCommit> copy = toArrayList(iterableLogs.iterator());
         git.close();

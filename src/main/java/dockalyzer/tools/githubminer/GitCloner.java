@@ -8,10 +8,12 @@ public class GitCloner {
 
     public void cloneRepository(String remotePath, String localPath) throws Exception {
         File repositoryFile = new File(localPath);
-        deleteDirectory(repositoryFile);
-
-        Git git = Git.cloneRepository().setURI(remotePath).setDirectory(new File(localPath)).call();
-        git.close();
+        if(repositoryFile.exists() && repositoryFile.isDirectory()) {
+            System.out.println("THIS REPO EXISTS");
+        }else{
+            Git git = Git.cloneRepository().setURI(remotePath).setDirectory(new File(localPath)).call();
+            git.close();
+        }
     }
 
     public static boolean deleteDirectory(File directory) {

@@ -29,6 +29,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/bigquerydata" />
+      <excludeFolder url="file://$MODULE_DIR$/dockerfiles" />
       <excludeFolder url="file://$MODULE_DIR$/github_repos" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/resources" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
@@ -36,6 +38,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="gitblit-1.8.0" level="project" />
+    <orderEntry type="library" name="Base64-v2.3" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jgit:org.eclipse.jgit:4.5.0.201609210915-r" level="project" />
     <orderEntry type="library" name="Maven: com.jcraft:jsch:0.1.53" level="project" />
     <orderEntry type="library" name="Maven: com.googlecode.javaewah:JavaEWAH:0.7.9" level="project" />
@@ -115,5 +118,11 @@
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.20.0-GA" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains:annotations:15.0" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:20.0" level="project" />
+    <orderEntry type="library" name="Maven: org.kohsuke:github-api:1.79" level="project" />
+    <orderEntry type="library" name="Maven: com.infradna.tool:bridge-method-annotation:1.14" level="project" />
+    <orderEntry type="library" name="Maven: org.jenkins-ci:annotation-indexer:1.4" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.supercsv:super-csv:2.4.0" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.13" level="project" />
+    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.13" level="project" />
   </component>
 </module>
