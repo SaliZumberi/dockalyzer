@@ -1,9 +1,21 @@
 package dockalyzer.models;
 
 
+import com.gitblit.models.PathModel;
+import dockalyzer.models.SQL.Snapshot;
 import dockalyzer.models.commands.*;
+import dockalyzer.tools.dockerlinter.DockerLinter;
+import org.apache.commons.lang.StringUtils;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.JoinColumn;
+import javax.print.Doc;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -11,22 +23,31 @@ import java.util.List;
  */
 public class DockerFile {
     public String localRepoPath;
+    public long repo_id;
+    public String dockerPath;
+    public long firstCommitDate;
+    public Snapshot latestDockerfile = new Snapshot();
 
-    public List<From> froms = new ArrayList<>();
-    public List<Maintainer> maintainers = new ArrayList<>();
-    public List<Run> runs = new ArrayList<>();
-    public List<Cmd> cmds = new ArrayList<>();
-    public List<Label> labels = new ArrayList<>();
-    public List<Env> envs = new ArrayList<>();
-    public List<Expose> exposes = new ArrayList<>();
-    public List<Add> adds = new ArrayList<>();
-    public List<Copy> copies = new ArrayList<>();
-    public  List<EntryPoint> entryPoints = new ArrayList<>();
-    public List<Volume> volumes = new ArrayList<>();
-    public List<User> users = new ArrayList<>();
-    public List<WorkDir> workDirs = new ArrayList<>();
-    public List<Arg> args = new ArrayList<>();
-    public List<OnBuild> onBuilds = new ArrayList<>();
-    public List<StopSignal> stopSignals = new ArrayList<>();
-    public List<Healthcheck> healthchecks = new ArrayList<>();
+    public List<PathModel.PathChangeModel> filesWhenCreated = new ArrayList<>();
+
+    public List<Snapshot> dockerfileSnapshots = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name="violated_rules", joinColumns=@JoinColumn(name="RUN_ID"))
+    @Column(name="violated_rules")
+    public List<String> violatedRules = new ArrayList<>();
+
+    public List<String> getViolatedRules() throws IOException, InterruptedException {
+        List<String> rules = new ArrayList<>();
+        File dockerfile = new File(localRepoPath+"/"+dockerPath);
+        String violations = DockerLinter.getReportOfLinting(dockerfile);
+        String[] lines = StringUtils.split(violations, "\r\n");
+        for (String l: lines){
+            String[] parts = l.split(" ");
+            rules.add(parts[1]);
+        }
+        this.violatedRules =rules;
+        return rules;
+    }
+
 }

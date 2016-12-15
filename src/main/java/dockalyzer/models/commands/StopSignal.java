@@ -1,14 +1,44 @@
 package dockalyzer.models.commands;
 
+import dockalyzer.models.SQL.Snapshot;
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
+
 /**
  * Created by salizumberi-laptop on 01.11.2016.
  */
+@Entity
+@Table(name = "df_stopsignal")
 public class StopSignal extends Instruction{
-    String signal;
-    public StopSignal(String signal) {
+/*    @Id
+    @Column(name="REPO_ID", unique=true, nullable=false)
+    public long id;*/
+
+    @Id
+    @Column(name = "SNAP_ID", unique = true, nullable = false)
+    @GeneratedValue(generator = "stopsignal_gen")
+    @GenericGenerator(name = "stopsignal_gen", strategy = "foreign",
+            parameters = @org.hibernate.annotations.Parameter(name = "property", value = "snapshot"))
+    private long id;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    Snapshot snapshot;
+
+    @Column(name = "signal")
+    public String signal;
+
+    @Column(name = "current", nullable = false)
+    public boolean current;
+
+    public StopSignal(Snapshot snapshot, String signal) {
         super();
+        this.snapshot = snapshot;
         this.signal = signal;
     }
 
 
+    public StopSignal() {
+    }
 }
