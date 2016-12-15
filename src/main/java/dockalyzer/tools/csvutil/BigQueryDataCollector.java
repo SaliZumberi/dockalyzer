@@ -1,12 +1,14 @@
 package dockalyzer.tools.csvutil;
 
 import dockalyzer.models.GithubRepository;
+import dockalyzer.process.extract.DateExtractor;
 import dockalyzer.services.GitHubMinerService;
 import org.supercsv.io.CsvListReader;
 import org.supercsv.io.CsvListWriter;
 import org.supercsv.prefs.CsvPreference;
 
 import java.io.*;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -19,19 +21,15 @@ public class BigQueryDataCollector {
     private final static String LOCAL_REPO_FOLDER = "github_repos/";
 
     public static void main(String[] args) throws Exception {
-        System.out.println("hello world");
-        CsvListReader reader = new CsvListReader(new FileReader(new File("bigquerydata\\data_1.csv")), CsvPreference.STANDARD_PREFERENCE);
-        CsvListWriter writer = new CsvListWriter(new FileWriter(new File("bigquerydata\\data_11.csv"),true), CsvPreference.STANDARD_PREFERENCE);
+        CsvListReader reader = new CsvListReader(new FileReader(new File("bigquerydata\\data_8.csv")), CsvPreference.STANDARD_PREFERENCE);
+        CsvListWriter writer = new CsvListWriter(new FileWriter(new File("bigquerydata\\data_88.csv"),true), CsvPreference.STANDARD_PREFERENCE);
 
         List<String> columns;
         int i = 0;
         while ((columns = reader.read()) != null) {
-            System.out.print("Index is: " + i);
             if (i>4600){
                 try {
-                    System.out.println("Now we have to wait unti rate limit is filled");
                     Thread.sleep(1000 * 60 * 50);
-                    System.out.println("okay 60 min are over, lets do another 5000");
                     i= 0;
                 } catch (InterruptedException ex) {}
             }
@@ -43,9 +41,11 @@ public class BigQueryDataCollector {
                 String key = split[0];
 
                 GithubRepository githubRepo = GitHubMinerService.getGitHubRepository(GITAPI + REPOS + key);
+                Date created_at = DateExtractor.getDateFromJsonString(githubRepo.created_at);
+                long unixTime = (long) created_at.getTime()/1000;
                 columns.add(0, String.valueOf(githubRepo.id));
                 columns.add(githubRepo.git_url);
-                columns.add(String.valueOf(githubRepo.created_at));
+                columns.add(String.valueOf(unixTime));
                 columns.add(String.valueOf(githubRepo.network_count));
                 columns.add(String.valueOf(githubRepo.open_issues));
                 columns.add(String.valueOf(githubRepo.open_issues_count));
@@ -58,7 +58,6 @@ public class BigQueryDataCollector {
                 columns.add(String.valueOf(githubRepo.size));
                 columns.add(String.valueOf(githubRepo.id));
 
-                System.out.print(" - Output2: " + columns + "\n");
                 writer.write(columns);
             }catch (Exception e){
 
