@@ -10,11 +10,12 @@ import java.io.InputStreamReader;
  */
 public class DockerLinter {
 
+    public final static String HADOLINT_EXEC = "docker run --rm -i lukasmartinelli/hadolint < ";
     public static String getReportOfLinting(File file) throws IOException, InterruptedException{
-        File dockerfile =new File("Dockerfile");
+        String exec  = HADOLINT_EXEC +file.getAbsolutePath();
 
         ProcessBuilder processBuilder = new ProcessBuilder("cmd",
-                "/c", "docker run --rm -i lukasmartinelli/hadolint < C:\\Users\\salizumberi-laptop\\workspace\\dockerlinter\\Dockerfile");
+                "/c",exec);
 
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
