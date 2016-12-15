@@ -14,15 +14,18 @@ import java.util.List;
  */
 public class DockerService {
 
-    public boolean isContainerOfficial(String image) throws DockerCertificateException, DockerException, InterruptedException {
-        final DockerClient dockerClient = DefaultDockerClient.fromEnv().build();
-        List<ImageSearchResult> results =  dockerClient.searchImages(image) ;
-       // System.out.println("Name of the result" + results.get(0).isAutomated());
-       // final List<Container> containers = dockerClient.listContainers(DockerClient.ListContainersParam.allContainers());
-      //  System.out.println("Name of the Container" + containers.get(0).image());
-        return results.get(0).isOfficial();
-        // final String[] command = {"run", "--rm", "-i","lukasmartinelli/hadolint", "<" ," C:\\Users\\salizumberi-laptop\\workspace\\dockerlinter\\Dockerfile"};
-    }
-
-
+    public static ImageSearchResult getImageInfos(String image) throws DockerCertificateException, DockerException, InterruptedException {
+       try{
+           final DockerClient dockerClient = DefaultDockerClient.fromEnv().build();
+                 List<ImageSearchResult> results =  dockerClient.searchImages(image) ;
+           // System.out.println("Name of the result" + results.get(0).isAutomated());
+           // final List<Container> containers = dockerClient.listContainers(DockerClient.ListContainersParam.allContainers());
+           //  System.out.println("Name of the Container" + containers.get(0).image());
+           return results.get(0);
+           // final String[] command = {"run", "--rm", "-i","lukasmartinelli/hadolint", "<" ," C:\\Users\\salizumberi-laptop\\workspace\\dockerlinter\\Dockerfile"};
+       }catch (Exception e){
+           e.printStackTrace();
+           return null;
+       }
+         }
 }
