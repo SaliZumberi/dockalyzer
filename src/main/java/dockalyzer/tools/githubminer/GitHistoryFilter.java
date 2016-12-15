@@ -48,7 +48,6 @@ public class GitHistoryFilter {
     }
 
     public void printDiff(Repository repository, ObjectId oldHead, ObjectId head) throws GitAPIException, IOException {
-        System.out.println("Printing diff between tree: " + oldHead + " and " + head);
 
         // prepare the two iterators to compute the diff between
         ObjectReader reader = repository.newObjectReader();
@@ -64,10 +63,7 @@ public class GitHistoryFilter {
                 .setOldTree(oldTreeIter)
                 .call();
         for (DiffEntry entry : diffs) {
-            System.out.println("Entry: " + entry);
         }
-
-        System.out.println("Done");
     }
 
     public void printDiffTest(String firstFile, String secondFile){
