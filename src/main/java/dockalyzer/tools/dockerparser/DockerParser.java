@@ -92,6 +92,56 @@ public class DockerParser {
         }
     }
 
+    public List<Comment> getCommentsFromDockerfile(File flatDockerFile) throws IOException {
+        List<Comment> comments = new ArrayList<>();
+        FileInputStream fis = new FileInputStream(flatDockerFile);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+        String line = null;
+        String instruction = null;
+        String newLine = null;
+
+        String comment = null;
+        boolean commentFlag = false;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("#") && !commentFlag) {
+                newLine += line;
+            }else if (line.startsWith("#") && commentFlag) {
+                newLine += line;
+            }else if (doesLineHaveAnInstruction(line) && commentFlag) {
+                if(line.contains("\t")){
+                    String uname = " ";
+                    line = line.replaceAll("\t", uname);
+                }
+
+                String arr[] = line.split(" ", 2);
+
+                String foundInstruction = arr[0];   //Instruction
+                String command;
+                if (arr.length > 1) {
+                    command = arr[1];
+                } else {
+                    command = "";
+                }
+                newLine = "";
+                newLine += line;
+
+                Comment c = new Comment(null, foundInstruction,comment);
+                comments.add(c);
+            } else if (line.contains(" \\") && concatFlag) {
+                newLine += line;
+            } else if (!doesLineHaveAnInstruction(line) && !line.contains(" \\") && concatFlag) {
+                newLine += line;
+                newLine = newLine.replace(" \\", "");
+                newLine = newLine.trim().replaceAll(" +", " ");
+                concatFlag = false;
+            } else if (doesLineHaveAnInstruction(line) && !line.contains(" \\")) {
+                line = line.trim().replaceAll(" +", " ");
+            }
+        }
+        reader.close();
+
+        return null;
+    }
     public File getFlatDockerFile(File dockerFile) throws IOException {
         File flatDockerfile = new File(dockerFile.getParentFile().getPath() + "\\DockerFileFlat");
         if(!flatDockerfile.exists()){
@@ -105,7 +155,6 @@ public class DockerParser {
         String line = null;
         String newLine = null;
         boolean concatFlag = false;
-
         while ((line = reader.readLine()) != null) {
             if (doesLineHaveAnInstruction(line) && line.contains(" \\")) {
                 newLine = "";
@@ -180,6 +229,9 @@ public class DockerParser {
         } else if (line.contains("VOLUME")) {
             return true;
         } else if (line.contains("WORKDIR")) {
+            return true;
+
+        } else if (line.startsWith("#")) {
             return true;
         } else {
             return false;

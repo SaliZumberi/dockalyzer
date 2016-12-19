@@ -76,6 +76,9 @@ public class Snapshot {
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "snapshot", orphanRemoval = true)
     public List<Arg> args = new ArrayList<>();
 
+    @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "snapshot", orphanRemoval = true)
+    public List<Comment> comments = new ArrayList<>();
+
     //TODO: repair instruction !!!
     @OneToMany(fetch = FetchType.EAGER, cascade = {CascadeType.ALL}, mappedBy = "snapshot", orphanRemoval = true)
     public List<OnBuild> onBuilds = new ArrayList<>();

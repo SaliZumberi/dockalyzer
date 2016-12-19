@@ -1,0 +1,68 @@
+{
+  "commitDate": null,
+  "indexOfCommit": 0,
+  "filesChangedWithinCommit": [],
+  "id": 0,
+  "del": 0,
+  "add": 0,
+  "mod": 0,
+  "froms": [
+    {
+      "imagename": "ubuntu",
+      "imageVersionNumber": 15.1,
+      "imageVersionString": null,
+      "digest": null,
+      "isAutomated": false,
+      "isOfficial": false
+    }
+  ],
+  "maintainers": [],
+  "runs": [
+    {
+      "executable": "apt-get",
+      "params": [
+        "update",
+        "-y"
+      ]
+    },
+    {
+      "executable": "apt-get",
+      "params": [
+        "install",
+        "-y",
+        "git"
+      ]
+    },
+    {
+      "executable": "apt-get",
+      "params": [
+        "install",
+        "-y",
+        "python"
+      ]
+    },
+    {
+      "executable": "apt-get",
+      "params": [
+        "install",
+        "-y",
+        "python-pip"
+      ]
+    }
+  ],
+  "cmds": [],
+  "labels": [],
+  "envs": [],
+  "exposes": [],
+  "adds": [],
+  "copies": [],
+  "entryPoints": [],
+  "volumes": [],
+  "users": [],
+  "workDirs": [],
+  "args": [],
+  "onBuilds": [],
+  "stopSignals": [],
+  "healthchecks": [],
+  "instructions": 5
+}
