@@ -70,4 +70,6 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-hibernate.cfg.xml
+/src/main/resources/hibernate.cfg.xml
+/src/main/resources/java/services/hibernate.cfg.xml
+/jsons/
