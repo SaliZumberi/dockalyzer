@@ -121,12 +121,14 @@ public class CommitProcessor {
         boolean dockyFound = false;
         finder:
         if (range_index < 0) {
+            System.out.println("6.3.1.1 range_index < 0");
             int index = 0;
             for (RevCommit commit : commitsList) {
                 if (commit.getId().equals(dockerCommit.getId())) {
                     dockys.add(commit);
                     while (!dockyFound) {
                         if (index == range_index) {
+                            System.out.println("6.3.1.2.1 index == range_index");
                             for (RevCommit docky : dockys) {
                                 List<PathModel.PathChangeModel> foundFiles = JGitUtils.getFilesInCommit(repository, docky);
                                 for (PathModel.PathChangeModel found : foundFiles) {
@@ -136,6 +138,7 @@ public class CommitProcessor {
                             dockyFound = true;
                             break finder;
                         } else {
+                            System.out.println("6.3.1.2.1 ---------------------");
                             List<RevCommit> tempDockys = new ArrayList<>();
                             for (RevCommit docky : dockys) {
                                 for (int i = 0; i < docky.getParentCount(); i++) {
@@ -152,11 +155,13 @@ public class CommitProcessor {
                 }
             }
         } else if (range_index > 0) {
+            System.out.println("6.3.1.2 range_index >0");
             int index = 0;
             dockys.add(dockerCommit);
             mut:
             while (!dockyFound) {
                 if (index == range_index) {
+                    System.out.println("6.3.1.2.1 index == range_index");
                     for (RevCommit docky : dockys) {
                         List<PathModel.PathChangeModel> foundFiles = JGitUtils.getFilesInCommit(repository, docky);
                         for (PathModel.PathChangeModel found : foundFiles) {
@@ -165,10 +170,12 @@ public class CommitProcessor {
                     }
                     dockyFound = true;
                 } else {
+                    System.out.println("6.3.1.2.1 ---------------------");
                     List<RevCommit> tempDockys = new ArrayList<>();
                     parent:
                     for (RevCommit children : commitsList) {
                         for (int i = 0; i < children.getParentCount(); i++) {
+                            System.out.println("6.3.1.2.2 forloo - size "+ commitsList.size());
                             RevCommit parent = children.getParents()[i];
                             for (RevCommit docky : dockys) {
                                 if (parent.getName().equals(docky.getName())) {
@@ -179,12 +186,9 @@ public class CommitProcessor {
                                 }
                             }
                         }
+                        dockyFound = true;
                     }
                     dockys = tempDockys;
-                    if (foundCommit == null) {
-                        break mut;
-                    } else {
-                    }
                 }
             }
         } else {
@@ -192,6 +196,7 @@ public class CommitProcessor {
             files = JGitUtils.getFilesInCommit(repository, dockerCommit);
             foundCommit = dockys.get(0);
         }
+        System.out.println("-------------------------------------");
 
         List<ChangedFile> changedFiles = new ArrayList<>();
         System.out.println("6.3.2 save Models in List (getChangedFilesWithinCommit");
@@ -233,14 +238,9 @@ public class CommitProcessor {
                     fileType,
                     model.mode, model.changeType, model.deletions, model.insertions,
                     range_index, rangeSize, model.commitId, repoPath);
-
             changedFiles.add(changedFile);
-
-
         }
-
         return changedFiles;
-
     }
 }
 
