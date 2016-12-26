@@ -37,6 +37,10 @@ public class App {
     public final static String REPOS = "repos/";
     public final static String LOCAL_REPO_FOLDER = "github_repos/";
 
+    public final static String USERNAME = "repos/";
+    public final static String PASSWORD = "repos/";
+
+
 
     private final static ArrayList<Integer> months = new ArrayList<>();
 
