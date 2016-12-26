@@ -56,7 +56,6 @@ buildNumber.properties
 
 /bigquerydata
 
-GitHubMinerService.java
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/

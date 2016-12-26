@@ -84,6 +84,37 @@ public class DockerParser {
         }
     }
 
+    private boolean checkForInstruction(String line){
+        boolean a = isContainExactWord(line, "FROM");
+        boolean b = isContainExactWord(line, "ADD");
+        boolean c = isContainExactWord(line, "COPY");
+        boolean d = isContainExactWord(line, "RUN");
+        boolean e = isContainExactWord(line, "LABEL");
+        boolean f = isContainExactWord(line, "ENV");
+        boolean g = isContainExactWord(line, "ARG");
+        boolean h = isContainExactWord(line, "VOLUME");
+        boolean i = isContainExactWord(line, "MAINTAINER");
+        boolean j = isContainExactWord(line, "HEALTHCHECK");
+        boolean k = isContainExactWord(line, "STOPSIGNAL");
+        boolean l = isContainExactWord(line, "EXPOSE");
+        boolean m = isContainExactWord(line, "CMD");
+        boolean n = isContainExactWord(line, "ENTRYPOINT");
+        boolean o = isContainExactWord(line, "ONBUILD");
+        boolean p = isContainExactWord(line, "USER");
+        boolean q = isContainExactWord(line, "WORKDIR");
+        if(a || b || c ||d ||e ||f ||g ||h ||i|| j ||k|| l|| m|| n|| o|| p|| q){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    private boolean isContainExactWord(String fullString, String partWord){
+        String pattern = "\\b"+partWord+"\\b";
+        Pattern p=Pattern.compile(pattern);
+        Matcher m=p.matcher(fullString);
+        return m.find();
+    }
+
     public List<Comment> getCommentsFromDockerfile(File flatDockerFile, Snapshot snapshot) throws IOException {
         List<Comment> comments = new ArrayList<>();
         FileInputStream fis = new FileInputStream(flatDockerFile);
@@ -99,9 +130,10 @@ public class DockerParser {
             if (line.startsWith("#")) {
                 String tempLine = line;
                 tempLine  = tempLine.replaceFirst("#","");
-                if(doesLineHaveAnInstruction(tempLine)){
+                
+                if(checkForInstruction(tempLine)){
                     boolean outCommInstruction = true;
-                    Comment c = new Comment(snapshot, "commented out",tempLine);
+                    Comment c = new Comment(snapshot, "commented out: " + getInstructionInString(tempLine),tempLine);
                     comments.add(c);
                     break statement;
                 }
@@ -199,6 +231,47 @@ public class DockerParser {
         return getFlatDockerFile(dockerfile);
     }
 
+    private static String getInstructionInString(String line) {
+        if (line.contains("ADD")) {
+            return "ADD";
+        } else if (line.contains("FROM")) {
+            return "FROM";
+        } else if (line.contains("CMD")) {
+            return "CMD";
+        } else if (line.contains("COPY")) {
+            return "COPY";
+        } else if (line.contains("ENTRYPOINT")) {
+            return "ENTRYPOINT";
+        } else if (line.contains("ENV")) {
+            return "ENV";
+        } else if (line.contains("EXPOSE")) {
+            return "EXPOSE";
+        } else if (line.contains("FROM")) {
+            return "FROM";
+        } else if (line.contains("HEALTHCHECK")) {
+            return "HEALTHCHECK";
+        } else if (line.contains("INSTRUCTION")) {
+            return "INSTRUCTION";
+        } else if (line.contains("LABEL")) {
+            return "LABEL";
+        } else if (line.contains("MAINTAINER")) {
+            return "MAINTAINER";
+        } else if (line.contains("ONBUILD")) {
+            return "ONBUILD";
+        } else if (line.contains("RUN")) {
+            return "RUN";
+        } else if (line.contains("STOPSIGNAL")) {
+            return "STOPSIGNAL";
+        } else if (line.contains("USER")) {
+            return "USER";
+        } else if (line.contains("VOLUME")) {
+            return "VOLUME";
+        } else if (line.contains("WORKDIR")) {
+            return "WORKDIR";
+        }else{
+            return "";
+        }
+    }
 
     private static boolean doesLineHaveAnInstruction(String line) {
         if (line.contains("ADD")) {

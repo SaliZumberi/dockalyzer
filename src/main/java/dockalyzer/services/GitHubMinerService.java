@@ -54,8 +54,8 @@ public class GitHubMinerService {
 
     public static JSONObject readJsonFromUrl2(String get) throws IOException, JSONException {
         URL url = new URL(get);
-        String username = App.USERNAME;
-        String password = App.PASSWORD;
+        String username = App.GITHUB_USERNAME;
+        String password = App.GITHUB_PASSWORD;
         URLConnection conn = url.openConnection();
         conn.setConnectTimeout(30000); // 30 seconds time out
 

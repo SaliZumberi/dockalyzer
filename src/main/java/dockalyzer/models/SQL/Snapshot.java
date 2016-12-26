@@ -169,7 +169,7 @@ public class Snapshot {
     @Column(name = "commit_index", nullable = false)
     private int commitIndex;
 
-    @Column(name = "index", nullable = false)
+    @Column(name = "current", nullable = false)
     private boolean isCurrentDockerfile;
 
     public List<ChangedFile> getFilesChangedWithinCommit() {
