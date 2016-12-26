@@ -1,15 +1,12 @@
 package dockalyzer.tools.githubminer;
 
-import com.fasterxml.jackson.core.json.JsonGeneratorImpl;
 import com.gitblit.models.PathModel;
 import com.gitblit.utils.JGitUtils;
 import com.google.common.collect.Lists;
 import dockalyzer.models.ChangedFile;
 import dockalyzer.models.SQL.Snapshot;
-import dockalyzer.process.extract.DateExtractor;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -19,8 +16,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static com.gitblit.tickets.TicketIndexer.Lucene.repository;
 
 /**
  * Created by salizumberi-laptop on 30.10.2016.

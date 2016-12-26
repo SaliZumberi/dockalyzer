@@ -1,7 +1,5 @@
 package dockalyzer.process.extract;
 
-import dockalyzer.tools.githubminer.GitCloner;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;

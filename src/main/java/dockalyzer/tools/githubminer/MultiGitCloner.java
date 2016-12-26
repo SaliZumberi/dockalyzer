@@ -1,12 +1,8 @@
 package dockalyzer.tools.githubminer;
 
-import org.eclipse.jgit.api.Git;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by salizumberi-laptop on 14.11.2016.

@@ -1,17 +1,12 @@
 package dockalyzer.app;
 
 import java.io.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Level;
 
-import com.google.gson.JsonElement;
-import dockalyzer.models.DockerFile;
 import dockalyzer.models.SQL.Dockerfile;
 import dockalyzer.models.SQL.Diff;
 import dockalyzer.models.SQL.Snapshot;
-import dockalyzer.models.commands.Comment;
 import dockalyzer.models.commands.From;
 import dockalyzer.models.commands.Run;
 import dockalyzer.process.extract.DateExtractor;

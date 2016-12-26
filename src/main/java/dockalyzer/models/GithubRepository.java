@@ -1,12 +1,5 @@
 package dockalyzer.models;
 
-import java.security.acl.Owner;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 /**
  * Created by salizumberi-laptop on 19.10.2016.
  */

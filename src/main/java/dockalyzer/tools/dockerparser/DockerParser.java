@@ -1,19 +1,8 @@
 package dockalyzer.tools.dockerparser;
 
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import dockalyzer.models.DockerFile;
-import dockalyzer.models.DockerfileSnapshot;
 import dockalyzer.models.SQL.Snapshot;
 import dockalyzer.models.commands.*;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonMethod;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -646,21 +635,7 @@ public class DockerParser {
         }
         return from;
     }
-
-
-    public DockerFile parseFile(File file) {
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                // process the line.
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+    
 
     public String getStringFromRegexPattern(String patternInput, String data) {
         Pattern pattern = Pattern.compile(patternInput);

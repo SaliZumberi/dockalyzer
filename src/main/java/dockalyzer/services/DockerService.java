@@ -4,7 +4,6 @@ import com.spotify.docker.client.DefaultDockerClient;
 import com.spotify.docker.client.DockerCertificateException;
 import com.spotify.docker.client.DockerClient;
 import com.spotify.docker.client.DockerException;
-import com.spotify.docker.client.messages.Container;
 import com.spotify.docker.client.messages.ImageSearchResult;
 
 import java.util.List;

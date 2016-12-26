@@ -1,8 +1,6 @@
 package dockalyzer.models.SQL;
 
-import com.gitblit.utils.JGitUtils;
 import dockalyzer.models.*;
-import dockalyzer.models.commands.Run;
 import dockalyzer.process.extract.DateExtractor;
 import dockalyzer.tools.dockerlinter.DockerLinter;
 import dockalyzer.tools.githubminer.CommitProcessor;
@@ -11,7 +9,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.omg.CORBA.RepositoryIdHelper;
 
 import javax.persistence.*;
 import java.io.File;
