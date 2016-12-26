@@ -1,5 +1,7 @@
 package dockalyzer.tools.githubminer;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import dockalyzer.models.SQL.Diff;
 import dockalyzer.models.SQL.Snapshot;
 import dockalyzer.models.commands.*;
@@ -24,6 +26,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by salizumberi-laptop on 30.10.2016.
@@ -265,84 +268,91 @@ public class DiffProcessor {
         }
     }
 
-    public static int[] getDiffStatistic(List <DiffType> diffTypes){
+    public static int[] getDiffStatistic(List<DiffType> diffTypes) {
         int[] stats = new int[3];
 
-        for(DiffType diffType: diffTypes){
-            if(diffType.getChangeType().contains("AddType")){
+        for (DiffType diffType : diffTypes) {
+            if (diffType.getChangeType().contains("AddType")) {
                 stats[0]++;
             }
-            if(diffType.getChangeType().contains("DelType")){
+            if (diffType.getChangeType().contains("DelType")) {
                 stats[1]++;
             }
-            if(diffType.getChangeType().contains("UpdateType")){
+            if (diffType.getChangeType().contains("UpdateType")) {
                 stats[2]++;
             }
         }
         return stats;
     }
+
     public static Diff getDiff(Snapshot oldSnapShot, Snapshot newSnapshot) {
         diff = new Diff();
-        diff.setSnapshots(oldSnapShot,newSnapshot);
+        diff.setSnapshots(oldSnapShot, newSnapshot);
 
         if (oldSnapShot == null && newSnapshot != null) {
             diff.setDiffState("NULL_COMMIT");
-            Snapshot nullSnap  =new Snapshot();
-            diff.diffs = getDiffTypeOfTwoSnapshot(nullSnap,newSnapshot);
-            int[] stats = getDiffStatistic( diff.diffs);
-            diff.setIns(stats[0]); diff.setDel(stats[1]); diff.setMod(stats[2]);
+            Snapshot nullSnap = new Snapshot();
+            diff.diffs = getDiffTypeOfTwoSnapshot(nullSnap, newSnapshot);
+            int[] stats = getDiffStatistic(diff.diffs);
+            diff.setIns(stats[0]);
+            diff.setDel(stats[1]);
+            diff.setMod(stats[2]);
         } else if (oldSnapShot != null && newSnapshot == null) {
             diff.setDiffState("COMMIT_NULL");
-            Snapshot nullSnap  =new Snapshot();
-            diff.diffs = getDiffTypeOfTwoSnapshot(oldSnapShot,nullSnap);
-            int[] stats = getDiffStatistic( diff.diffs);
-            diff.setIns(stats[0]); diff.setDel(stats[1]); diff.setMod(stats[2]);
+            Snapshot nullSnap = new Snapshot();
+            diff.diffs = getDiffTypeOfTwoSnapshot(oldSnapShot, nullSnap);
+            int[] stats = getDiffStatistic(diff.diffs);
+            diff.setIns(stats[0]);
+            diff.setDel(stats[1]);
+            diff.setMod(stats[2]);
         } else if (newSnapshot != null && oldSnapShot != null) {
             diff.setDiffState("COMMIT_COMMIT");
-            Snapshot nullSnap  =new Snapshot();
-            diff.diffs = getDiffTypeOfTwoSnapshot(oldSnapShot,newSnapshot);
+            Snapshot nullSnap = new Snapshot();
+            diff.diffs = getDiffTypeOfTwoSnapshot(oldSnapShot, newSnapshot);
             int[] stats;
-            if(diff.diffs !=null){
-               stats = getDiffStatistic( diff.diffs);
-            }else{
+            if (diff.diffs != null) {
+                stats = getDiffStatistic(diff.diffs);
+            } else {
                 //TODO: ENABLE COMMENTS
-                stats = new int[]{0,0,0};
+                stats = new int[]{0, 0, 0};
             }
-            diff.setIns(stats[0]); diff.setDel(stats[1]); diff.setMod(stats[2]);
+            diff.setIns(stats[0]);
+            diff.setDel(stats[1]);
+            diff.setMod(stats[2]);
 
-        }else{
+        } else {
             return null;
         }
         return diff;
     }
 
-    private static List<DiffType> getDiffTypeOfTwoSnapshot(Snapshot oldSnapShot, Snapshot newSnapshot){
+    private static List<DiffType> getDiffTypeOfTwoSnapshot(Snapshot oldSnapShot, Snapshot newSnapshot) {
         List<DiffType> diffTypes = new ArrayList<>();
         /*
         Single Instructions
          */
         List<DiffType> froms = getDiffOfFrom(oldSnapShot.from, newSnapshot.from);
-        if(froms != null && froms.size()>0){
-            getDiffOfFrom(oldSnapShot.from, newSnapshot.from).forEach(x->diffTypes.add(x));
+        if (froms != null && froms.size() > 0) {
+            getDiffOfFrom(oldSnapShot.from, newSnapshot.from).forEach(x -> diffTypes.add(x));
         }
 
         DiffType maintainer = getDiffOfMaintainer(oldSnapShot.maintainer, newSnapshot.maintainer);
-        if(maintainer != null){
+        if (maintainer != null) {
             diffTypes.add(getDiffOfMaintainer(oldSnapShot.maintainer, newSnapshot.maintainer));
         }
 
-        List<DiffType> cmds= getDiffOfCmd(oldSnapShot.cmd, newSnapshot.cmd);
-        if(cmds != null){
-            getDiffOfCmd(oldSnapShot.cmd, newSnapshot.cmd).forEach(x->diffTypes.add(x));
+        List<DiffType> cmds = getDiffOfCmd(oldSnapShot.cmd, newSnapshot.cmd);
+        if (cmds != null) {
+            getDiffOfCmd(oldSnapShot.cmd, newSnapshot.cmd).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  entryPoints = getDiffOfEntryPoint(oldSnapShot.entryPoint, newSnapshot.entryPoint);
-        if(entryPoints != null && entryPoints.size()>0){
-            getDiffOfEntryPoint(oldSnapShot.entryPoint, newSnapshot.entryPoint).forEach(x->diffTypes.add(x));
+        List<DiffType> entryPoints = getDiffOfEntryPoint(oldSnapShot.entryPoint, newSnapshot.entryPoint);
+        if (entryPoints != null && entryPoints.size() > 0) {
+            getDiffOfEntryPoint(oldSnapShot.entryPoint, newSnapshot.entryPoint).forEach(x -> diffTypes.add(x));
         }
 
         DiffType stopSignals = getDiffOfStopSignal(oldSnapShot.stopSignals, newSnapshot.stopSignals);
-        if(stopSignals != null){
+        if (stopSignals != null) {
             diffTypes.add(getDiffOfStopSignal(oldSnapShot.stopSignals, newSnapshot.stopSignals));
         }
 
@@ -351,29 +361,29 @@ public class DiffProcessor {
         Multiple Instructions with Params
          */
 
-        List<DiffType>  runs = getDiffOfMultipleRuns(oldSnapShot.runs,newSnapshot.runs);
-        if(runs != null && runs.size()>0){
-            getDiffOfMultipleRuns(oldSnapShot.runs,newSnapshot.runs).forEach(x->diffTypes.add(x));
+        List<DiffType> runs = getDiffOfMultipleRuns(oldSnapShot.runs, newSnapshot.runs);
+        if (runs != null && runs.size() > 0) {
+            getDiffOfMultipleRuns(oldSnapShot.runs, newSnapshot.runs).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  labels =  getDiffOfMultipleLabels(oldSnapShot.labels,newSnapshot.labels);
-        if(labels != null && labels.size()>0){
-            getDiffOfMultipleLabels(oldSnapShot.labels,newSnapshot.labels).forEach(x->diffTypes.add(x));
+        List<DiffType> labels = getDiffOfMultipleLabels(oldSnapShot.labels, newSnapshot.labels);
+        if (labels != null && labels.size() > 0) {
+            getDiffOfMultipleLabels(oldSnapShot.labels, newSnapshot.labels).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  adds = getDiffOfMultipleAdds(oldSnapShot.adds,newSnapshot.adds);
-        if(adds != null && adds.size()>0){
-            getDiffOfMultipleAdds(oldSnapShot.adds,newSnapshot.adds).forEach(x->diffTypes.add(x));
+        List<DiffType> adds = getDiffOfMultipleAdds(oldSnapShot.adds, newSnapshot.adds);
+        if (adds != null && adds.size() > 0) {
+            getDiffOfMultipleAdds(oldSnapShot.adds, newSnapshot.adds).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  copies = getDiffOfMultipleCopies(oldSnapShot.copies,newSnapshot.copies);
-        if(copies != null && copies.size()>0){
-            getDiffOfMultipleCopies(oldSnapShot.copies,newSnapshot.copies).forEach(x->diffTypes.add(x));
+        List<DiffType> copies = getDiffOfMultipleCopies(oldSnapShot.copies, newSnapshot.copies);
+        if (copies != null && copies.size() > 0) {
+            getDiffOfMultipleCopies(oldSnapShot.copies, newSnapshot.copies).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  envs = getDiffOfMultipleEnvs(oldSnapShot.envs,newSnapshot.envs);
-        if(envs != null && envs.size()>0){
-            getDiffOfMultipleEnvs(oldSnapShot.envs,newSnapshot.envs).forEach(x->diffTypes.add(x));
+        List<DiffType> envs = getDiffOfMultipleEnvs(oldSnapShot.envs, newSnapshot.envs);
+        if (envs != null && envs.size() > 0) {
+            getDiffOfMultipleEnvs(oldSnapShot.envs, newSnapshot.envs).forEach(x -> diffTypes.add(x));
         }
 
 
@@ -381,37 +391,42 @@ public class DiffProcessor {
         Multiple Instructions without Params
          */
 
-        List<DiffType>  users =  getDiffOfMultipleUsers(oldSnapShot.users,newSnapshot.users);
-        if(users != null && users.size()>0){
-            getDiffOfMultipleUsers(oldSnapShot.users,newSnapshot.users).forEach(x->diffTypes.add(x));
+        List<DiffType> users = getDiffOfMultipleUsers(oldSnapShot.users, newSnapshot.users);
+        if (users != null && users.size() > 0) {
+            getDiffOfMultipleUsers(oldSnapShot.users, newSnapshot.users).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  workDirs =  getDiffOfMultipleWorkDir(oldSnapShot.workDirs,newSnapshot.workDirs);
-        if(workDirs != null && workDirs.size()>0){
-            getDiffOfMultipleWorkDir(oldSnapShot.workDirs,newSnapshot.workDirs).forEach(x->diffTypes.add(x));
+        List<DiffType> workDirs = getDiffOfMultipleWorkDir(oldSnapShot.workDirs, newSnapshot.workDirs);
+        if (workDirs != null && workDirs.size() > 0) {
+            getDiffOfMultipleWorkDir(oldSnapShot.workDirs, newSnapshot.workDirs).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  volumes = getDiffOfMultipleVolumes(oldSnapShot.volumes,newSnapshot.volumes);
-        if(volumes != null && volumes.size()>0){
-            getDiffOfMultipleVolumes(oldSnapShot.volumes,newSnapshot.volumes).forEach(x->diffTypes.add(x));
+        List<DiffType> comments = getDiffOfMultipleComments(oldSnapShot.comments, newSnapshot.comments);
+        if (comments != null && comments.size() > 0) {
+            getDiffOfMultipleComments(oldSnapShot.comments, newSnapshot.comments).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  exposes = getDiffOfMultipleExposes(oldSnapShot.exposes,newSnapshot.exposes);
-        if(exposes != null && exposes.size()>0){
-            getDiffOfMultipleExposes(oldSnapShot.exposes,newSnapshot.exposes).forEach(x->diffTypes.add(x));
+        List<DiffType> volumes = getDiffOfMultipleVolumes(oldSnapShot.volumes, newSnapshot.volumes);
+        if (volumes != null && volumes.size() > 0) {
+            getDiffOfMultipleVolumes(oldSnapShot.volumes, newSnapshot.volumes).forEach(x -> diffTypes.add(x));
         }
 
-        List<DiffType>  args = getDiffOfMultipleArgs(oldSnapShot.args,newSnapshot.args);
-        if(args != null && args.size()>0){
-            getDiffOfMultipleArgs(oldSnapShot.args,newSnapshot.args).forEach(x->diffTypes.add(x));
+        List<DiffType> exposes = getDiffOfMultipleExposes(oldSnapShot.exposes, newSnapshot.exposes);
+        if (exposes != null && exposes.size() > 0) {
+            getDiffOfMultipleExposes(oldSnapShot.exposes, newSnapshot.exposes).forEach(x -> diffTypes.add(x));
+        }
+
+        List<DiffType> args = getDiffOfMultipleArgs(oldSnapShot.args, newSnapshot.args);
+        if (args != null && args.size() > 0) {
+            getDiffOfMultipleArgs(oldSnapShot.args, newSnapshot.args).forEach(x -> diffTypes.add(x));
         }
 
         //getDiffOfHealthCheck(oldSnapShot.healthCheck, newSnapshot.healthCheck);
         // getDiffOfOnBuilds(oldSnapShot.onBuilds, newSnapshot.onBuilds);
 
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -497,9 +512,9 @@ public class DiffProcessor {
 
 
                         }
-                        if(found){
-                            found =false;
-                        }else {
+                        if (found) {
+                            found = false;
+                        } else {
                             deletedItems.add(tempOld.get(y));
                             tempOld.remove(y);
                         }
@@ -521,9 +536,9 @@ public class DiffProcessor {
                 }
             }
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -609,9 +624,9 @@ public class DiffProcessor {
 
 
                         }
-                        if(found){
-                            found =false;
-                        }else {
+                        if (found) {
+                            found = false;
+                        } else {
                             deletedItems.add(tempOld.get(y));
                             tempOld.remove(y);
                         }
@@ -633,13 +648,13 @@ public class DiffProcessor {
                 }
             }
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
-    
+
     private static List<DiffType> getDiffOfMultipleAdds(List<Add> oldAdds, List<Add> newAdds) {
         List<DiffType> diffTypes = new ArrayList<>();
         List<Add> oldSnapShot = oldAdds;
@@ -720,9 +735,9 @@ public class DiffProcessor {
 
 
                         }
-                        if(found){
-                            found =false;
-                        }else {
+                        if (found) {
+                            found = false;
+                        } else {
                             deletedItems.add(tempOld.get(y));
                             tempOld.remove(y);
                         }
@@ -744,9 +759,9 @@ public class DiffProcessor {
                 }
             }
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -832,9 +847,9 @@ public class DiffProcessor {
 
 
                         }
-                        if(found){
-                            found =false;
-                        }else {
+                        if (found) {
+                            found = false;
+                        } else {
                             deletedRuns.add(tempOldRunList.get(y));
                             tempOldRunList.remove(y);
                         }
@@ -856,152 +871,150 @@ public class DiffProcessor {
                 }
             }
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
-    
-    private static List<DiffType> getDiffOfMultipleRuns(List<Run> oldListRuns, List<Run> newListRuns) {
-            List<DiffType> diffTypes = new ArrayList<>();
-            List<Run> oldSnapShot = oldListRuns;
-            List<Run> newSnapshot = newListRuns;
 
+    private static List<DiffType> getDiffOfMultipleRuns(List<Run> oldListRuns, List<Run> newListRuns) {
+        List<DiffType> diffTypes = new ArrayList<>();
+        List<Run> oldSnapShot = oldListRuns;
+        List<Run> newSnapshot = newListRuns;
         /*
         Copy Arrays
          */
-            List<Run> oldchangedRuns = new ArrayList<>(oldSnapShot);
-            List<Run> newchangedRuns = new ArrayList<>(newSnapshot);
+        List<Run> oldchangedRuns = new ArrayList<>(oldSnapShot);
+        List<Run> newchangedRuns = new ArrayList<>(newSnapshot);
 
-            List<Run> notChangedRuns = new ArrayList<>();
+        List<Run> notChangedRuns = new ArrayList<>();
 
-            //CLEAN 1: Remove equal Run Instructions
+        //CLEAN 1: Remove equal Run Instructions
 
-            for (int i = 0; i < oldSnapShot.size(); i++) {
-                boolean foundFlag = false;
-                    innerloop:
-                    for (int x = 0; x < newchangedRuns.size(); x++) {
-                        String oldExec = oldSnapShot.get(i).executable;
-                        String oldParams = oldSnapShot.get(i).allParams;
-                        String newExec = newSnapshot.get(x).executable;
-                        String newParams = newSnapshot.get(x).allParams;
+        for (int i = 0; i < oldSnapShot.size(); i++) {
+            boolean foundFlag = false;
+            innerloop:
+            for (int x = 0; x < newchangedRuns.size(); x++) {
+                String oldExec = oldSnapShot.get(i).executable;
+                String oldParams = oldSnapShot.get(i).allParams;
+                String newExec = newSnapshot.get(x).executable;
+                String newParams = newSnapshot.get(x).allParams;
 
-                        if (oldSnapShot.get(i).executable.equals(newchangedRuns.get(x).executable) &&
-                                oldSnapShot.get(i).allParams.equals(newchangedRuns.get(x).allParams)) {
-                            newchangedRuns.remove(x);
-                            notChangedRuns.add(oldSnapShot.get(i));
-                            break innerloop;
-                        }
+                if (oldSnapShot.get(i).executable.equals(newchangedRuns.get(x).executable) &&
+                        oldSnapShot.get(i).allParams.equals(newchangedRuns.get(x).allParams)) {
+                    newchangedRuns.remove(x);
+                    notChangedRuns.add(oldSnapShot.get(i));
+                    break innerloop;
                 }
-
             }
+        }
 
             /*
             Delete the Runs which have not changed
              */
 
-            List<Run> notUpdated = notChangedRuns;
-            oldchangedRuns.removeAll(notChangedRuns);
+        List<Run> notUpdated = notChangedRuns;
+        oldchangedRuns.removeAll(notChangedRuns);
 
 
-            List<Run> tempOldRunList = new ArrayList<>();
-            List<Run> tempNewRunList = new ArrayList<>();
-            newchangedRuns.forEach(x -> tempNewRunList.add(x));
-            oldchangedRuns.forEach(x -> tempOldRunList.add(x));
+        List<Run> tempOldRunList = new ArrayList<>();
+        List<Run> tempNewRunList = new ArrayList<>();
+        newchangedRuns.forEach(x -> tempNewRunList.add(x));
+        oldchangedRuns.forEach(x -> tempOldRunList.add(x));
 
-            if (tempOldRunList.size() == 1 & tempNewRunList.size() == 1) {
-                for (DiffType diffsOfNewRun : getDiffsOfRun(tempOldRunList.get(0), tempNewRunList.get(0))) {
+        if (tempOldRunList.size() == 1 & tempNewRunList.size() == 1) {
+            for (DiffType diffsOfNewRun : getDiffsOfRun(tempOldRunList.get(0), tempNewRunList.get(0))) {
+                diffTypes.add(diffsOfNewRun);
+            }
+        } else if (tempOldRunList.size() == 0 & tempNewRunList.size() > 0) {
+            for (Run newRun : tempNewRunList) {
+                for (DiffType diffsOfNewRun : getDiffsOfRun(null, newRun)) {
                     diffTypes.add(diffsOfNewRun);
                 }
-            } else if (tempOldRunList.size() == 0 & tempNewRunList.size() > 0) {
-                for (Run newRun : tempNewRunList) {
-                    for (DiffType diffsOfNewRun : getDiffsOfRun(null, newRun)) {
-                        diffTypes.add(diffsOfNewRun);
-                    }
-                }
-            } else if (tempOldRunList.size() > 0 & tempNewRunList.size() == 0) {
-                for (Run deletedRun : tempOldRunList) {
-                    for (DiffType diffsOfNewRun : getDiffsOfRun(deletedRun, null)) {
-                        diffTypes.add(diffsOfNewRun);
-                    }
-                }
-            } else {
-                boolean mappingFlag = false;
-                List<Run> possibleMappingList = new ArrayList<>();
-                List<Run> deletedRuns = new ArrayList<>();
-                List<Run> newRuns = new ArrayList<>();
-                List<Run> updated = new ArrayList<>();
-                while (!mappingFlag) {
-                    if (tempOldRunList.size() != 0) {
-                        for (int y = 0; y < tempOldRunList.size(); y++) {
-                            for (int x = 0; x < tempNewRunList.size(); x++) {
-                                if (tempOldRunList.get(y).executable.equals(tempNewRunList.get(x).executable)) {
-                                    possibleMappingList.add(tempNewRunList.get(x));
-                                }
-                            }
-                            if (possibleMappingList.size() > 0) {
-                                for (int i = 0; i < possibleMappingList.size(); i++) {
-                                    possibleMappingList.get(i).score = getParamterScore(tempOldRunList.get(y).params, possibleMappingList.get(i).params);
-                                }
-
-                                Integer indexOfMaxRun = null;
-                                int maxScore = 0;
-                                for (int i = 0; i < possibleMappingList.size(); i++) {
-                                    if (possibleMappingList.get(i).score > maxScore) {
-                                        indexOfMaxRun = i;
-                                        maxScore = possibleMappingList.get(i).score;
-                                    }
-                                }
-
-                                if (indexOfMaxRun != null) {
-                                    updated.add(tempOldRunList.get(y));
-                                    updated.add(possibleMappingList.get(indexOfMaxRun));
-                                    for (DiffType diffsOfNewRun : getDiffsOfRun(tempOldRunList.get(y), possibleMappingList.get(indexOfMaxRun))) {
-                                        diffTypes.add(diffsOfNewRun);
-                                    }
-                                }
-                                tempOldRunList.remove(y);
-                                Run mappedRun = possibleMappingList.get(indexOfMaxRun);
-                                for (int i = 0; i < tempNewRunList.size(); i++) {
-                                    if (tempNewRunList.get(i).executable.equals(mappedRun.executable) &&
-                                            tempNewRunList.get(i).allParams.equals(mappedRun.allParams)) {
-                                        tempNewRunList.remove(i);
-                                        break;
-                                    }
-                                }
-                                possibleMappingList = new ArrayList<>();
-                            } else {
-                                deletedRuns.add(tempOldRunList.get(y));
-                                tempOldRunList.remove(y);
-                            }
-                        }
-                    } else {
-                        for (Run newRun : tempNewRunList) {
-                            newRuns.add(newRun);
-                            for (DiffType diffsOfNewRun : getDiffsOfRun(null, newRun)) {
-                                diffTypes.add(diffsOfNewRun);
-                            }
-                        }
-                        for (Run deletedRun : deletedRuns) {
-                            for (DiffType diffsOfNewRun : getDiffsOfRun(deletedRun, null)) {
-                                diffTypes.add(diffsOfNewRun);
-                            }
-                        }
-                        mappingFlag = true;
-                        possibleMappingList = new ArrayList<>();
-                        //   deletedRuns = new ArrayList<>();
-                        //   newRuns = new ArrayList<>();
-                    }
+            }
+        } else if (tempOldRunList.size() > 0 & tempNewRunList.size() == 0) {
+            for (Run deletedRun : tempOldRunList) {
+                for (DiffType diffsOfNewRun : getDiffsOfRun(deletedRun, null)) {
+                    diffTypes.add(diffsOfNewRun);
                 }
             }
-            if(diffTypes.size() > 0){
-                return diffTypes;
-            }else{
-                return null;
-            }
+        } else {
+            boolean mappingFlag = false;
+            List<Run> possibleMappingList = new ArrayList<>();
+            List<Run> deletedRuns = new ArrayList<>();
+            List<Run> newRuns = new ArrayList<>();
+            List<Run> updated = new ArrayList<>();
+            while (!mappingFlag) {
+                if (tempOldRunList.size() != 0) {
+                    for (int y = 0; y < tempOldRunList.size(); y++) {
+                        for (int x = 0; x < tempNewRunList.size(); x++) {
+                            if (tempOldRunList.get(y).executable.equals(tempNewRunList.get(x).executable)) {
+                                possibleMappingList.add(tempNewRunList.get(x));
+                            }
+                        }
+                        if (possibleMappingList.size() > 0) {
+                            for (int i = 0; i < possibleMappingList.size(); i++) {
+                                possibleMappingList.get(i).score = getParamterScore(tempOldRunList.get(y).params, possibleMappingList.get(i).params);
+                            }
 
+                            Integer indexOfMaxRun = null;
+                            int maxScore = 0;
+                            for (int i = 0; i < possibleMappingList.size(); i++) {
+                                if (possibleMappingList.get(i).score > maxScore) {
+                                    indexOfMaxRun = i;
+                                    maxScore = possibleMappingList.get(i).score;
+                                }
+                            }
+
+                            if (indexOfMaxRun != null) {
+                                updated.add(tempOldRunList.get(y));
+                                updated.add(possibleMappingList.get(indexOfMaxRun));
+                                for (DiffType diffsOfNewRun : getDiffsOfRun(tempOldRunList.get(y), possibleMappingList.get(indexOfMaxRun))) {
+                                    diffTypes.add(diffsOfNewRun);
+                                }
+                            }
+                            tempOldRunList.remove(y);
+                            Run mappedRun = possibleMappingList.get(indexOfMaxRun);
+                            for (int i = 0; i < tempNewRunList.size(); i++) {
+                                if (tempNewRunList.get(i).executable.equals(mappedRun.executable) &&
+                                        tempNewRunList.get(i).allParams.equals(mappedRun.allParams)) {
+                                    tempNewRunList.remove(i);
+                                    break;
+                                }
+                            }
+                            possibleMappingList = new ArrayList<>();
+                        } else {
+                            deletedRuns.add(tempOldRunList.get(y));
+                            tempOldRunList.remove(y);
+                        }
+                    }
+                } else {
+                    for (Run newRun : tempNewRunList) {
+                        newRuns.add(newRun);
+                        for (DiffType diffsOfNewRun : getDiffsOfRun(null, newRun)) {
+                            diffTypes.add(diffsOfNewRun);
+                        }
+                    }
+                    for (Run deletedRun : deletedRuns) {
+                        for (DiffType diffsOfNewRun : getDiffsOfRun(deletedRun, null)) {
+                            diffTypes.add(diffsOfNewRun);
+                        }
+                    }
+                    mappingFlag = true;
+                    possibleMappingList = new ArrayList<>();
+                    //   deletedRuns = new ArrayList<>();
+                    //   newRuns = new ArrayList<>();
+                }
+            }
         }
+        if (diffTypes.size() > 0) {
+            return diffTypes;
+        } else {
+            return null;
+        }
+
+    }
 
     private static List<DiffType> getDiffOfMultipleUsers(List<User> oldUsers, List<User> newUsers) {
         List<DiffType> diffTypes = new ArrayList<>();
@@ -1042,33 +1055,33 @@ public class DiffProcessor {
         oldchangedRuns.forEach(x -> tempOld.add(x));
 
         if (tempOld.size() == 1 & tempNew.size() == 1) {
-            DiffType diffType  = getDiffOfUsers(tempOld.get(0), tempNew.get(0));
+            DiffType diffType = getDiffOfUsers(tempOld.get(0), tempNew.get(0));
             diffTypes.add(diffType);
         } else if (tempOld.size() == 0 & tempNew.size() > 0) {
             for (User newOnes : tempNew) {
-                DiffType diffType  = getDiffOfUsers(null, newOnes);
+                DiffType diffType = getDiffOfUsers(null, newOnes);
                 diffTypes.add(diffType);
             }
         } else if (tempOld.size() > 0 & tempNew.size() == 0) {
             for (User deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfUsers(deletedOnes, null);
+                DiffType diffType = getDiffOfUsers(deletedOnes, null);
                 diffTypes.add(diffType);
             }
         } else {
             for (User deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfUsers(deletedOnes, null);
+                DiffType diffType = getDiffOfUsers(deletedOnes, null);
                 diffTypes.add(diffType);
             }
             for (User newOnes : tempNew) {
-                DiffType diffType  = getDiffOfUsers(null, newOnes);
+                DiffType diffType = getDiffOfUsers(null, newOnes);
                 diffTypes.add(diffType);
             }
         }
 
 
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1106,33 +1119,128 @@ public class DiffProcessor {
         oldchangedRuns.forEach(x -> tempOld.add(x));
 
         if (tempOld.size() == 1 & tempNew.size() == 1) {
-            DiffType diffType  = getDiffOfWorkDirs(tempOld.get(0), tempNew.get(0));
+            DiffType diffType = getDiffOfWorkDirs(tempOld.get(0), tempNew.get(0));
             diffTypes.add(diffType);
         } else if (tempOld.size() == 0 & tempNew.size() > 0) {
             for (WorkDir newOnes : tempNew) {
-                DiffType diffType  = getDiffOfWorkDirs(null, newOnes);
+                DiffType diffType = getDiffOfWorkDirs(null, newOnes);
                 diffTypes.add(diffType);
             }
         } else if (tempOld.size() > 0 & tempNew.size() == 0) {
             for (WorkDir deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfWorkDirs(deletedOnes, null);
+                DiffType diffType = getDiffOfWorkDirs(deletedOnes, null);
                 diffTypes.add(diffType);
             }
         } else {
             for (WorkDir deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfWorkDirs(deletedOnes, null);
+                DiffType diffType = getDiffOfWorkDirs(deletedOnes, null);
                 diffTypes.add(diffType);
             }
             for (WorkDir newOnes : tempNew) {
-                DiffType diffType  = getDiffOfWorkDirs(null, newOnes);
+                DiffType diffType = getDiffOfWorkDirs(null, newOnes);
                 diffTypes.add(diffType);
             }
         }
 
 
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
+            return null;
+        }
+    }
+
+    private static List<DiffType> getDiffOfMultipleComments(List<Comment> oldWorkdirs, List<Comment> newWorkDirs) {
+        List<DiffType> diffTypes = new ArrayList<>();
+        List<Comment> oldSnapShot = oldWorkdirs;
+        List<Comment> newSnapshot = newWorkDirs;
+        /*
+        Copy Arrays
+         */
+        List<Comment> oldchangedRuns = new ArrayList<>(oldSnapShot);
+        List<Comment> newchangedRuns = new ArrayList<>(newSnapshot);
+        List<Comment> notChangedRuns = new ArrayList<>();
+
+        //CLEAN 1: Remove equal Run Instructions
+
+        for (int i = 0; i < oldSnapShot.size(); i++) {
+            boolean foundFlag = false;
+            innerloop:
+            for (int x = 0; x < newchangedRuns.size(); x++) {
+                if (oldSnapShot.get(i).comment.equals(newchangedRuns.get(x).comment)) {
+                    newchangedRuns.remove(x);
+                    notChangedRuns.add(oldSnapShot.get(i));
+                    break innerloop;
+                }
+            }
+        }
+        List<Comment> notUpdated = notChangedRuns;
+        oldchangedRuns.removeAll(notChangedRuns);
+
+        List<Comment> tempOld = new ArrayList<>();
+        List<Comment> tempNew = new ArrayList<>();
+        newchangedRuns.forEach(x -> tempNew.add(x));
+        oldchangedRuns.forEach(x -> tempOld.add(x));
+
+        if (tempOld.size() == 1 & tempNew.size() == 1) {
+            DiffType diffType = getDiffOfComments(tempOld.get(0), tempNew.get(0));
+            diffTypes.add(diffType);
+        } else if (tempOld.size() == 0 & tempNew.size() > 0) {
+            for (Comment newOnes : tempNew) {
+                DiffType diffType = getDiffOfComments(null, newOnes);
+                diffTypes.add(diffType);
+            }
+        } else if (tempOld.size() > 0 & tempNew.size() == 0) {
+            for (Comment deletedOnes : tempOld) {
+                DiffType diffType = getDiffOfComments(deletedOnes, null);
+                diffTypes.add(diffType);
+            }
+        } else if (tempOld.size() > 1 & tempNew.size() > 1) {
+            int bestIndex = -1;
+            boolean allTested = false;
+            while (!allTested) {
+                epoche:
+                for (int i = 0; i < tempOld.size(); i++) {
+                    if (i == tempOld.size() - 1) {
+                        allTested = true;
+                    }
+
+                    int max = 0;
+                    for (int x = 0; x < tempNew.size(); x++) {
+                        Splitter splitter = Splitter.onPattern("\\W").trimResults().omitEmptyStrings();
+                        Set<String> intersection = Sets.intersection(//
+                                Sets.newHashSet(splitter.split(tempOld.get(i).comment)), //
+                                Sets.newHashSet(splitter.split(tempNew.get(x).comment)));
+
+                        if (intersection.size() > max) {
+                            max = intersection.size();
+                            bestIndex = x;
+                        }
+
+                    }
+                    if (max > 0 && tempOld.get(i).instructionAfter.equals(tempNew.get(bestIndex).instructionAfter)) {
+                        DiffType diffType = getDiffOfComments(tempOld.get(i), tempNew.get(bestIndex));
+                        diffTypes.add(diffType);
+                        tempNew.remove(bestIndex);
+                        tempOld.remove(i);
+                        break epoche;
+                    } else {
+
+                    }
+                }
+            }
+            for (Comment deletedOnes : tempOld) {
+                DiffType diffType = getDiffOfComments(deletedOnes, null);
+                diffTypes.add(diffType);
+            }
+            for (Comment newOnes : tempNew) {
+                DiffType diffType = getDiffOfComments(null, newOnes);
+                diffTypes.add(diffType);
+            }
+        }
+        if (diffTypes.size() > 0) {
+            return diffTypes;
+        } else {
             return null;
         }
     }
@@ -1170,33 +1278,33 @@ public class DiffProcessor {
         oldchangedRuns.forEach(x -> tempOld.add(x));
 
         if (tempOld.size() == 1 & tempNew.size() == 1) {
-            DiffType diffType  = getDiffOfVolumes(tempOld.get(0), tempNew.get(0));
+            DiffType diffType = getDiffOfVolumes(tempOld.get(0), tempNew.get(0));
             diffTypes.add(diffType);
         } else if (tempOld.size() == 0 & tempNew.size() > 0) {
             for (Volume newOnes : tempNew) {
-                DiffType diffType  = getDiffOfVolumes(null, newOnes);
+                DiffType diffType = getDiffOfVolumes(null, newOnes);
                 diffTypes.add(diffType);
             }
         } else if (tempOld.size() > 0 & tempNew.size() == 0) {
             for (Volume deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfVolumes(deletedOnes, null);
+                DiffType diffType = getDiffOfVolumes(deletedOnes, null);
                 diffTypes.add(diffType);
             }
         } else {
             for (Volume deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfVolumes(deletedOnes, null);
+                DiffType diffType = getDiffOfVolumes(deletedOnes, null);
                 diffTypes.add(diffType);
             }
             for (Volume newOnes : tempNew) {
-                DiffType diffType  = getDiffOfVolumes(null, newOnes);
+                DiffType diffType = getDiffOfVolumes(null, newOnes);
                 diffTypes.add(diffType);
             }
         }
 
 
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1234,32 +1342,32 @@ public class DiffProcessor {
         oldchangedRuns.forEach(x -> tempOld.add(x));
 
         if (tempOld.size() == 1 & tempNew.size() == 1) {
-            DiffType diffType  = getDiffOfArgs(tempOld.get(0), tempNew.get(0));
+            DiffType diffType = getDiffOfArgs(tempOld.get(0), tempNew.get(0));
             diffTypes.add(diffType);
         } else if (tempOld.size() == 0 & tempNew.size() > 0) {
             for (Arg newOnes : tempNew) {
-                DiffType diffType  = getDiffOfArgs(null, newOnes);
+                DiffType diffType = getDiffOfArgs(null, newOnes);
                 diffTypes.add(diffType);
             }
         } else if (tempOld.size() > 0 & tempNew.size() == 0) {
             for (Arg deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfArgs(deletedOnes, null);
+                DiffType diffType = getDiffOfArgs(deletedOnes, null);
                 diffTypes.add(diffType);
             }
         } else {
             for (Arg deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfArgs(deletedOnes, null);
+                DiffType diffType = getDiffOfArgs(deletedOnes, null);
                 diffTypes.add(diffType);
             }
             for (Arg newOnes : tempNew) {
-                DiffType diffType  = getDiffOfArgs(null, newOnes);
+                DiffType diffType = getDiffOfArgs(null, newOnes);
                 diffTypes.add(diffType);
             }
         }
 
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1301,31 +1409,31 @@ public class DiffProcessor {
         oldchangedRuns.forEach(x -> tempOld.add(x));
 
         if (tempOld.size() == 1 & tempNew.size() == 1) {
-            DiffType diffType  = getDiffOfExposes(tempOld.get(0), tempNew.get(0));
+            DiffType diffType = getDiffOfExposes(tempOld.get(0), tempNew.get(0));
             diffTypes.add(diffType);
         } else if (tempOld.size() == 0 & tempNew.size() > 0) {
             for (Expose newOnes : tempNew) {
-                DiffType diffType  = getDiffOfExposes(null, newOnes);
+                DiffType diffType = getDiffOfExposes(null, newOnes);
                 diffTypes.add(diffType);
             }
         } else if (tempOld.size() > 0 & tempNew.size() == 0) {
             for (Expose deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfExposes(deletedOnes, null);
+                DiffType diffType = getDiffOfExposes(deletedOnes, null);
                 diffTypes.add(diffType);
             }
         } else {
             for (Expose deletedOnes : tempOld) {
-                DiffType diffType  = getDiffOfExposes(deletedOnes, null);
+                DiffType diffType = getDiffOfExposes(deletedOnes, null);
                 diffTypes.add(diffType);
             }
             for (Expose newOnes : tempNew) {
-                DiffType diffType  = getDiffOfExposes(null, newOnes);
+                DiffType diffType = getDiffOfExposes(null, newOnes);
                 diffTypes.add(diffType);
             }
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1341,7 +1449,7 @@ public class DiffProcessor {
         return oldP.size() + 1;
     }
 
-    private static DiffType getDiffOfWorkDirs(WorkDir oldWorkDir,WorkDir newWorkDir) {
+    private static DiffType getDiffOfWorkDirs(WorkDir oldWorkDir, WorkDir newWorkDir) {
         DiffType diffType = new DiffType(diff);
         diffType.setInstruction(Instructions.WORKDIR);
         if (oldWorkDir == null && newWorkDir != null) {
@@ -1354,7 +1462,30 @@ public class DiffProcessor {
             if (!oldWorkDir.path.equals(newWorkDir.path)) {
                 diffType.setChangeType(UpdateType.PATH);
                 diffType.setBeforeAndAfter(oldWorkDir.path, newWorkDir.path);
-            }{
+            }
+            {
+                return null;
+            }
+        } else {
+            return null;
+        }
+        return diffType;
+    }
+
+    private static DiffType getDiffOfComments(Comment oldComment, Comment newComment) {
+        DiffType diffType = new DiffType(diff);
+        diffType.setInstruction(Instructions.COMMENT);
+        if (oldComment == null && newComment != null) {
+            diffType.setChangeType(AddType.COMMENT);
+            diffType.setBeforeAndAfter(null, newComment.comment);
+        } else if (oldComment != null && newComment == null) {
+            diffType.setChangeType(DelType.COMMENT);
+            diffType.setBeforeAndAfter(oldComment.comment, null);
+        } else if (oldComment != null && newComment != null) {
+            if (!oldComment.comment.equals(newComment.comment)) {
+                diffType.setChangeType(UpdateType.COMMENT);
+                diffType.setBeforeAndAfter(oldComment.comment, newComment.comment);
+            }else{
                 return null;
             }
         } else {
@@ -1376,7 +1507,7 @@ public class DiffProcessor {
             if (!oldUser.username.equals(newUser.username)) {
                 diffType.setChangeType(UpdateType.USER_NAME);
                 diffType.setBeforeAndAfter(oldUser.username, newUser.username);
-            }else {
+            } else {
                 return null;
             }
         } else {
@@ -1398,7 +1529,7 @@ public class DiffProcessor {
             if (!oldMaintainer.value.equals(newVolume.value)) {
                 diffType.setChangeType(UpdateType.VALUE);
                 diffType.setBeforeAndAfter(oldMaintainer.value, newVolume.value);
-            }else {
+            } else {
                 return null;
             }
         } else {
@@ -1423,14 +1554,14 @@ public class DiffProcessor {
             diffTypes.add(diffType);
         } else if (oldCopie != null && newCopie != null) {
             if (!oldCopie.sourceDestination.equals(newCopie.sourceDestination)) {
-                if(oldCopie.source.equals(newCopie.source)){
+                if (oldCopie.source.equals(newCopie.source)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.COPY);
                     diffType.setChangeType(UpdateType.SOURCE);
                     diffType.setBeforeAndAfter(oldCopie.sourceDestination, newCopie.sourceDestination);
                     diffTypes.add(diffType);
                 }
-                if(oldCopie.destination.equals(newCopie.destination)){
+                if (oldCopie.destination.equals(newCopie.destination)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.COPY);
                     diffType.setChangeType(UpdateType.DESTINATION);
@@ -1441,9 +1572,9 @@ public class DiffProcessor {
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1464,14 +1595,14 @@ public class DiffProcessor {
             diffTypes.add(diffType);
         } else if (oldAdd != null && newAdd != null) {
             if (!oldAdd.sourceDestination.equals(newAdd.sourceDestination)) {
-                if(oldAdd.source.equals(newAdd.source)){
+                if (oldAdd.source.equals(newAdd.source)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.ADD);
                     diffType.setChangeType(UpdateType.SOURCE);
                     diffType.setBeforeAndAfter(oldAdd.sourceDestination, newAdd.sourceDestination);
                     diffTypes.add(diffType);
                 }
-                if(oldAdd.destination.equals(newAdd.destination)){
+                if (oldAdd.destination.equals(newAdd.destination)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.ADD);
                     diffType.setChangeType(UpdateType.DESTINATION);
@@ -1482,9 +1613,9 @@ public class DiffProcessor {
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1502,7 +1633,7 @@ public class DiffProcessor {
             if (oldExpose.port != (newExpose.port)) {
                 diffType.setChangeType(UpdateType.MAINTAINER);
                 diffType.setBeforeAndAfter(String.valueOf(oldExpose.port), String.valueOf(newExpose.port));
-            }else {
+            } else {
                 return null;
             }
         } else {
@@ -1511,7 +1642,7 @@ public class DiffProcessor {
         return diffType;
     }
 
-    private static List<DiffType>  getDiffOfEnvs(Env oldEnv, Env newEnv) {
+    private static List<DiffType> getDiffOfEnvs(Env oldEnv, Env newEnv) {
         List<DiffType> diffTypes = new ArrayList<>();
         if (oldEnv == null && newEnv != null) {
             DiffType diffType = new DiffType(diff);
@@ -1527,14 +1658,14 @@ public class DiffProcessor {
             diffTypes.add(diffType);
         } else if (oldEnv != null && newEnv != null) {
             if (!oldEnv.keyValue.equals(newEnv.keyValue)) {
-                if(oldEnv.key.equals(newEnv.key)){
+                if (oldEnv.key.equals(newEnv.key)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.ENV);
                     diffType.setChangeType(UpdateType.KEY);
                     diffType.setBeforeAndAfter(oldEnv.keyValue, newEnv.keyValue);
                     diffTypes.add(diffType);
                 }
-                if(oldEnv.value.equals(newEnv.value)){
+                if (oldEnv.value.equals(newEnv.value)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.ENV);
                     diffType.setChangeType(UpdateType.VALUE);
@@ -1545,14 +1676,14 @@ public class DiffProcessor {
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
 
-    private static  List<DiffType> getDiffOfLabels(Label oldLabel, Label newLabel) {
+    private static List<DiffType> getDiffOfLabels(Label oldLabel, Label newLabel) {
         List<DiffType> diffTypes = new ArrayList<>();
         if (oldLabel == null && newLabel != null) {
             DiffType diffType = new DiffType(diff);
@@ -1568,14 +1699,14 @@ public class DiffProcessor {
             diffTypes.add(diffType);
         } else if (oldLabel != null && newLabel != null) {
             if (!oldLabel.keyValue.equals(newLabel.keyValue)) {
-                if(oldLabel.key.equals(newLabel.key)){
+                if (oldLabel.key.equals(newLabel.key)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.LABEL);
                     diffType.setChangeType(UpdateType.KEY);
                     diffType.setBeforeAndAfter(oldLabel.keyValue, newLabel.keyValue);
                     diffTypes.add(diffType);
                 }
-                if(oldLabel.value.equals(newLabel.value)){
+                if (oldLabel.value.equals(newLabel.value)) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(Instructions.LABEL);
                     diffType.setChangeType(UpdateType.VALUE);
@@ -1586,9 +1717,9 @@ public class DiffProcessor {
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1612,7 +1743,8 @@ public class DiffProcessor {
         }
         return diffType;
     }
-//TODO: ONBUILD!
+
+    //TODO: ONBUILD!
     private static DiffType getDiffOfOnBuilds(List<OnBuild> oldOnBuilds, List<OnBuild> newOnBuilds) {
         DiffType diffType = new DiffType(diff);
         diffType.setInstruction(Instructions.ONBUILD);
@@ -1640,27 +1772,27 @@ public class DiffProcessor {
                 diffType.setChangeType(UpdateType.EXECUTABLE);
                 diffType.setBeforeAndAfter(oldRun.executable, newRun.executable);
                 diffTypes.add(diffType);
-            }else if (oldRun.executable.equals(newRun.executable) && !oldRun.allParams.equals(newRun.allParams)) {
-                for (DiffType diffType : getParamChanges(oldRun.params, newRun.params, oldRun.executable, Instructions.RUN,false)) {
+            } else if (oldRun.executable.equals(newRun.executable) && !oldRun.allParams.equals(newRun.allParams)) {
+                for (DiffType diffType : getParamChanges(oldRun.params, newRun.params, oldRun.executable, Instructions.RUN, false)) {
                     diffTypes.add(diffType);
                 }
-            } else if(!oldRun.executable.equals(newRun.executable) && !oldRun.allParams.equals(newRun.allParams)){
+            } else if (!oldRun.executable.equals(newRun.executable) && !oldRun.allParams.equals(newRun.allParams)) {
                 DiffType diffTypeE = new DiffType(diff);
                 diffTypeE.setInstruction(Instructions.RUN);
                 diffTypeE.setChangeType(UpdateType.EXECUTABLE_PARAMETER);
                 diffTypeE.setBeforeAndAfter(oldRun.executable, newRun.executable);
                 diffTypes.add(diffTypeE);
 
-                for (DiffType diffType : getParamChanges(oldRun.params, newRun.params, oldRun.executable, Instructions.RUN,true)) {
+                for (DiffType diffType : getParamChanges(oldRun.params, newRun.params, oldRun.executable, Instructions.RUN, true)) {
                     diffTypes.add(diffType);
                 }
             }
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1697,7 +1829,7 @@ public class DiffProcessor {
             if (!oldStopSignals.signal.equals(newStopSignals.signal)) {
                 diffType.setChangeType(UpdateType.MAINTAINER);
                 diffType.setBeforeAndAfter(oldStopSignals.signal, newStopSignals.signal);
-            }else {
+            } else {
                 return null;
             }
         } else {
@@ -1727,27 +1859,27 @@ public class DiffProcessor {
                 diffType.setChangeType(UpdateType.EXECUTABLE);
                 diffType.setBeforeAndAfter(oldEntryPoint.executable, newEntryPoint.executable);
                 diffTypes.add(diffType);
-            }else if (oldEntryPoint.executable.equals(newEntryPoint.executable) && !oldEntryPoint.allParams.equals(newEntryPoint.allParams)) {
-                for (DiffType diffType : getParamChanges(oldEntryPoint.params, newEntryPoint.params, oldEntryPoint.executable, Instructions.ENTRYPOINT,false)) {
+            } else if (oldEntryPoint.executable.equals(newEntryPoint.executable) && !oldEntryPoint.allParams.equals(newEntryPoint.allParams)) {
+                for (DiffType diffType : getParamChanges(oldEntryPoint.params, newEntryPoint.params, oldEntryPoint.executable, Instructions.ENTRYPOINT, false)) {
                     diffTypes.add(diffType);
                 }
-            } else if(!oldEntryPoint.executable.equals(newEntryPoint.executable) && !oldEntryPoint.allParams.equals(newEntryPoint.allParams)){
+            } else if (!oldEntryPoint.executable.equals(newEntryPoint.executable) && !oldEntryPoint.allParams.equals(newEntryPoint.allParams)) {
                 DiffType diffTypeE = new DiffType(diff);
                 diffTypeE.setInstruction(Instructions.ENTRYPOINT);
                 diffTypeE.setChangeType(UpdateType.EXECUTABLE_PARAMETER);
                 diffTypeE.setBeforeAndAfter(oldEntryPoint.executable, newEntryPoint.executable);
                 diffTypes.add(diffTypeE);
 
-                for (DiffType diffType : getParamChanges(oldEntryPoint.params, newEntryPoint.params, oldEntryPoint.executable, Instructions.ENTRYPOINT,true)) {
+                for (DiffType diffType : getParamChanges(oldEntryPoint.params, newEntryPoint.params, oldEntryPoint.executable, Instructions.ENTRYPOINT, true)) {
                     diffTypes.add(diffType);
                 }
             }
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
@@ -1773,79 +1905,80 @@ public class DiffProcessor {
                 diffType.setChangeType(UpdateType.CMD);
                 diffType.setBeforeAndAfter(oldCmd.executable, newCmd.executable);
                 diffTypes.add(diffType);
-            }else if (oldCmd.executable.equals(newCmd.executable) && !oldCmd.allParams.equals(newCmd.allParams)) {
-                for (DiffType diffType : getParamChanges(oldCmd.params, newCmd.params, oldCmd.executable, Instructions.CMD,false)) {
+            } else if (oldCmd.executable.equals(newCmd.executable) && !oldCmd.allParams.equals(newCmd.allParams)) {
+                for (DiffType diffType : getParamChanges(oldCmd.params, newCmd.params, oldCmd.executable, Instructions.CMD, false)) {
                     diffTypes.add(diffType);
                 }
-            } else if(!oldCmd.executable.equals(newCmd.executable) && !oldCmd.allParams.equals(newCmd.allParams)){
+            } else if (!oldCmd.executable.equals(newCmd.executable) && !oldCmd.allParams.equals(newCmd.allParams)) {
                 DiffType diffTypeE = new DiffType(diff);
                 diffTypeE.setInstruction(Instructions.CMD);
                 diffTypeE.setChangeType(UpdateType.EXECUTABLE_PARAMETER);
                 diffTypeE.setBeforeAndAfter(oldCmd.executable, newCmd.executable);
                 diffTypes.add(diffTypeE);
 
-                for (DiffType diffType : getParamChanges(oldCmd.params, newCmd.params, oldCmd.executable, Instructions.CMD,true)) {
+                for (DiffType diffType : getParamChanges(oldCmd.params, newCmd.params, oldCmd.executable, Instructions.CMD, true)) {
                     diffTypes.add(diffType);
                 }
             }
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }
+
     private static List<DiffType> getParamChanges(List<String> oldParams, List<String> newParams, String executable, Instructions instructionType, boolean bothChanged) {
         List<DiffType> diffTypes = new ArrayList<>();
 
-        List <String> oldP = new ArrayList<>(oldParams);
-        List <String> newP = new ArrayList<>(newParams);
+        List<String> oldP = new ArrayList<>(oldParams);
+        List<String> newP = new ArrayList<>(newParams);
 
-        List <String> paramsTempa = new ArrayList<>(oldParams);
-        List <String> paramsTempb = new ArrayList<>(newParams);
+        List<String> paramsTempa = new ArrayList<>(oldParams);
+        List<String> paramsTempb = new ArrayList<>(newParams);
         paramsTempa.retainAll(paramsTempb);
         paramsTempb.retainAll(oldParams);
 
-        List <String> intersectiona = new ArrayList<>(paramsTempa);
-        List <String> intersectionb = new ArrayList<>(paramsTempb);
+        List<String> intersectiona = new ArrayList<>(paramsTempa);
+        List<String> intersectionb = new ArrayList<>(paramsTempb);
 
         oldP.removeAll(intersectiona);
         newP.removeAll(intersectionb);
 
-        if (oldP.size() ==1 && newP.size() ==1){
+        if (oldP.size() == 1 && newP.size() == 1) {
             DiffType diffType = new DiffType(diff);
             diffType.setInstruction(instructionType);
-            if(bothChanged){
+            if (bothChanged) {
                 diffType.setChangeType(UpdateType.EXECUTABLE_PARAMETER);
-            }else{
+            } else {
                 diffType.setChangeType(UpdateType.PARAMETER);
 
             }
             diffType.setBeforeAndAfter(oldP.get(0), newP.get(0), executable);
             diffTypes.add(diffType);
-        }else{
-            if(oldP.size()>0){
+        } else {
+            if (oldP.size() > 0) {
                 for (int i = 0; i < oldP.size(); i++) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(instructionType);
-                    if(bothChanged){
+                    if (bothChanged) {
                         diffType.setChangeType(DelType.EXECUTABLE_PARAMETER);
-                    }else{
+                    } else {
                         diffType.setChangeType(DelType.PARAMETER);
                     }
                     diffType.setBeforeAndAfter(oldP.get(i), null, executable);
                     diffTypes.add(diffType);
                 }
             }
-            if(newP.size()>0){
+            if (newP.size() > 0) {
                 for (int i = 0; i < newP.size(); i++) {
                     DiffType diffType = new DiffType(diff);
                     diffType.setInstruction(instructionType);
-                    if(bothChanged){
+                    if (bothChanged) {
                         diffType.setChangeType(AddType.EXECUTABLE_PARAMETER);
-                    }else{
+                    } else {
                         diffType.setChangeType(AddType.PARAMETER);
                     }
                     diffType.setBeforeAndAfter(null, newP.get(i), executable);
@@ -1853,11 +1986,7 @@ public class DiffProcessor {
                 }
             }
         }
-        if(diffTypes.size() >0){
-            return diffTypes;
-        }else{
-            return null;
-        }
+        return diffTypes;
     }
 
     private static DiffType getDiffOfMaintainer(Maintainer oldMaintainer, Maintainer newMaintainer) {
@@ -1873,7 +2002,7 @@ public class DiffProcessor {
             if (!oldMaintainer.maintainername.equals(newMaintainer.maintainername)) {
                 diffType.setChangeType(UpdateType.MAINTAINER);
                 diffType.setBeforeAndAfter(oldMaintainer.maintainername, newMaintainer.maintainername);
-            }else{
+            } else {
                 return null;
             }
         } else {
@@ -1888,7 +2017,7 @@ public class DiffProcessor {
             DiffType diffType = new DiffType(diff);
             diffType.setInstruction(Instructions.FROM);
             diffType.setChangeType(AddType.FROM);
-            diffType.setBeforeAndAfter(null,newFrom.fullName);
+            diffType.setBeforeAndAfter(null, newFrom.fullName);
             diffTypes.add(diffType);
         } else if (oldFrom != null && newFrom == null) {
             DiffType diffType = new DiffType(diff);
@@ -1931,9 +2060,9 @@ public class DiffProcessor {
         } else {
             return null;
         }
-        if(diffTypes.size() >0){
+        if (diffTypes.size() > 0) {
             return diffTypes;
-        }else{
+        } else {
             return null;
         }
     }

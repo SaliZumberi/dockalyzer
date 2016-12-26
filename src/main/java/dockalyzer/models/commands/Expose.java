@@ -29,7 +29,8 @@ public class Expose extends Instruction{
     public Expose(Snapshot snapshot, String port) {
         super();
         this.snapshot = snapshot;
-        this.port = Integer.parseInt(port);
+        String p = port.replaceAll("[^0-9]+", " ");
+        this.port = Integer.parseInt(p);
 }
 
     public Expose() {

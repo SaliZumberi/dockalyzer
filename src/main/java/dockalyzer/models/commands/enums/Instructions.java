@@ -20,5 +20,6 @@ public enum Instructions {
     STOPSIGNAL,
     USER,
     VOLUME,
-    WORKDIR
+    WORKDIR,
+    COMMENT
 }

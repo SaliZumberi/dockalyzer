@@ -11,6 +11,7 @@ import dockalyzer.models.DockerFile;
 import dockalyzer.models.SQL.Dockerfile;
 import dockalyzer.models.SQL.Diff;
 import dockalyzer.models.SQL.Snapshot;
+import dockalyzer.models.commands.Comment;
 import dockalyzer.models.commands.From;
 import dockalyzer.models.commands.Run;
 import dockalyzer.process.extract.DateExtractor;
@@ -71,6 +72,15 @@ public class App {
         //DiffProcessor.showDiffFilesOfTwoCommits(historyOfFile.get(0), historyOfFile.get(0), repository, git);
 
         //    CommitProcessor.getChangedFilesWithinCommit(historyOfFile,repository);
+
+        String dockerfile = "dockerfiles/Dockerfile";
+
+      /*  for(int i=2; i<40; i++){
+            File newDockerfile = new File(dockerfile + i);
+            DockerParser docky = new DockerParser("","");
+            List<Comment> comments =  docky.getCommentsFromDockerfile(newDockerfile,null);
+            int muti = comments.size();
+        }*/
 
         String localPath = "github_repos/56803681";
         String dockerPath = "dockerfiles/fedora/fedora-22/fedora-22-base/Dockerfile";

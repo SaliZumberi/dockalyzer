@@ -18,23 +18,25 @@ public class Comment extends Instruction{
     public long id;
 
     @ManyToOne
-    @JoinColumn(name ="SNAP_ID")
+    @JoinColumn(name = "SNAP_ID")
     Snapshot snapshot;
 
     @Column(name = "instruction")
-    public String instruction;
+    public String instructionAfter;
 
     @Column(name = "comment", nullable = false)
     public String comment;
 
-    public Comment(Snapshot snapshot, String instruction, String comment) {
+    public Comment(Snapshot snapshot, String instructionAfter, String comment) {
         super();
         this.snapshot = snapshot;
-        this.instruction = instruction;
-        this.comment = comment;
+        this.instructionAfter = instructionAfter;
+        if (comment.length() > 250){
+            this.comment = comment.substring(0, 250) + "...";
+        }else{
+            this.comment = comment;
+        }
     }
-
     public Comment() {
-
     }
 }

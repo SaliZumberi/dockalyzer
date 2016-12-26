@@ -50,6 +50,7 @@ public class DockerParser {
     public List<WorkDir> workDirs = new ArrayList<>();
     public List<Arg> args = new ArrayList<>();
     public List<OnBuild> onBuilds = new ArrayList<>();
+    public List<Comment> comments = new ArrayList<>();
 
     public DockerParser(String localpath, String localDockerfilePath) {
         String[] pathTokens = localDockerfilePath.split("/");
@@ -72,17 +73,19 @@ public class DockerParser {
 
     public Snapshot getDockerfileObject(String fileName) throws IOException {
         dockerfile = new Snapshot();
-        File flatDockerfile = getFlatDockerFile(new File(fileName));
+        File fileToBeFlat = new File(fileName);
+        File flatDockerfile = getFlatDockerFile(fileToBeFlat);
         doClassificationOfLines(flatDockerfile);
-        assignToDockerObject();
+        assignToDockerObject(fileToBeFlat);
         return dockerfile;
     }
 
     public Snapshot getDockerfileObject() throws IOException {
         dockerfile = new Snapshot();
-        File flatDockerfile = getFlatDockerFile(new File(this.localPath + "/" + this.localDockerfilePath + "/" + "Dockerfile"));
+        File fileToBeFlat = new File(this.localPath + "/" + this.localDockerfilePath + "/" + "Dockerfile");
+        File flatDockerfile = getFlatDockerFile(fileToBeFlat);
         doClassificationOfLines(flatDockerfile);
-        assignToDockerObject();
+        assignToDockerObject(fileToBeFlat);
         return dockerfile;
     }
 
@@ -92,55 +95,70 @@ public class DockerParser {
         }
     }
 
-    public List<Comment> getCommentsFromDockerfile(File flatDockerFile) throws IOException {
+    public List<Comment> getCommentsFromDockerfile(File flatDockerFile, Snapshot snapshot) throws IOException {
         List<Comment> comments = new ArrayList<>();
         FileInputStream fis = new FileInputStream(flatDockerFile);
         BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
         String line = null;
-        String instruction = null;
-        String newLine = null;
-
-        String comment = null;
+        String instruction = "";
+        String newLine = "";
+        boolean out = false;
         boolean commentFlag = false;
+        boolean header = false;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("#") && !commentFlag) {
-                newLine += line;
-            }else if (line.startsWith("#") && commentFlag) {
-                newLine += line;
+            statement:
+            if (line.startsWith("#")) {
+                String tempLine = line;
+                tempLine  = tempLine.replaceFirst("#","");
+                if(doesLineHaveAnInstruction(tempLine)){
+                    boolean outCommInstruction = true;
+                    Comment c = new Comment(snapshot, "commented out",tempLine);
+                    comments.add(c);
+                    break statement;
+                }
+                if(commentFlag){
+                    String concatComment = line.replaceFirst("#"," ");
+                    newLine += concatComment;
+                }else{
+                    newLine += line;
+                    commentFlag = true;
+                }
+            }else if (line.trim().isEmpty()) {
+                if(commentFlag && header){
+                    Comment c = new Comment(snapshot, "standalone",newLine);
+                    comments.add(c);
+                }else if(commentFlag && !header){
+                    Comment c = new Comment(snapshot, "header",newLine);
+                    comments.add(c);
+                    header = true;
+                }
+                newLine = "";
+                instruction = "";
+                commentFlag = false;
+
             }else if (doesLineHaveAnInstruction(line) && commentFlag) {
                 if(line.contains("\t")){
                     String uname = " ";
                     line = line.replaceAll("\t", uname);
                 }
-
                 String arr[] = line.split(" ", 2);
 
-                String foundInstruction = arr[0];   //Instruction
-                String command;
-                if (arr.length > 1) {
-                    command = arr[1];
-                } else {
-                    command = "";
-                }
-                newLine = "";
-                newLine += line;
+                String foundInstruction = arr[0];
 
-                Comment c = new Comment(null, foundInstruction,comment);
+                Comment c = new Comment(snapshot, "before " + foundInstruction,newLine);
                 comments.add(c);
-            } else if (line.contains(" \\") && concatFlag) {
-                newLine += line;
-            } else if (!doesLineHaveAnInstruction(line) && !line.contains(" \\") && concatFlag) {
-                newLine += line;
-                newLine = newLine.replace(" \\", "");
-                newLine = newLine.trim().replaceAll(" +", " ");
-                concatFlag = false;
-            } else if (doesLineHaveAnInstruction(line) && !line.contains(" \\")) {
-                line = line.trim().replaceAll(" +", " ");
+
+                newLine = "";
+                instruction = "";
+                commentFlag = false;
             }
         }
         reader.close();
 
-        return null;
+        if(comments.size()>0){
+            return comments;
+        }
+        return comments;
     }
     public File getFlatDockerFile(File dockerFile) throws IOException {
         File flatDockerfile = new File(dockerFile.getParentFile().getPath() + "\\DockerFileFlat");
@@ -671,7 +689,8 @@ public class DockerParser {
         return null;
     }
 
-    public void assignToDockerObject() {
+    public void assignToDockerObject(File file) throws IOException {
+        dockerfile.comments = getCommentsFromDockerfile(file, dockerfile);
         dockerfile.from = from;
         dockerfile.maintainer = maintainer;
         dockerfile.cmd = cmd;

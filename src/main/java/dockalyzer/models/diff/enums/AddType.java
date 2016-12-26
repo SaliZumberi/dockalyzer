@@ -6,6 +6,7 @@ package dockalyzer.models.diff.enums;
 public enum AddType{
     ADD,
     CMD,
+    COMMENT,
     COPY,
     ENTRYPOINT,
     EXECUTABLE_PARAMETER,

@@ -10,6 +10,7 @@ public enum UpdateType {
     ENTRYPOINT,
     ENV,
     EXPOSE,
+    COMMENT,
     FROM,
     LABEL,
     MAINAINER,

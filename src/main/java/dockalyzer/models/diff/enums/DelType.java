@@ -7,6 +7,7 @@ public enum DelType {
     ADD,
     CMD,
     COPY,
+    COMMENT,
     ENTRYPOINT,
     ENV,
     EXPOSE,
