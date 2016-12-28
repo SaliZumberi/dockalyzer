@@ -54,8 +54,6 @@ buildNumber.properties
 # IntelliJ
 /out/
 
-/bigquerydata
-
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
