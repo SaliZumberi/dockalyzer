@@ -110,7 +110,7 @@ public class Snapshot {
     @JoinTable(name="SNAP_DIFF",
             joinColumns={@JoinColumn(name="SNAP_ID")},
             inverseJoinColumns={@JoinColumn(name="DIFF_ID")})
-    private Set<Diff> diffs = new HashSet<Diff>();
+    private List<Diff> diffs = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "snapshot", orphanRemoval = true)
     @PrimaryKeyJoinColumn
@@ -171,6 +171,22 @@ public class Snapshot {
 
     @Column(name = "current", nullable = false)
     private boolean isCurrentDockerfile;
+
+    public void setNewDiff(Diff newDiff) {
+        if(newDiff !=null){
+            this.diffs.add(newDiff);
+        }
+    }
+
+    public List<Diff> getDiffs() {
+        return diffs;
+    }
+
+    public void setOldDiff(Diff oldDiff) {
+        if(oldDiff !=null){
+            this.diffs.add(oldDiff);
+        }
+    }
 
     public List<ChangedFile> getFilesChangedWithinCommit() {
         return filesChangedWithinCommit;

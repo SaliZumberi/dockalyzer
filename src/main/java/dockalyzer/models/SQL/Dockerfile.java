@@ -67,6 +67,17 @@ public class Dockerfile {
     @Column(name = "i_size", nullable = false)
     private int size;
 
+    public boolean isFork() {
+        return fork;
+    }
+
+    public void setFork(boolean fork) {
+        this.fork = fork;
+    }
+
+    @Column(name = "fork", nullable = false)
+    private boolean fork;
+
     private int commits;
 
     public List<Snapshot> getDockerfileSnapshots() {

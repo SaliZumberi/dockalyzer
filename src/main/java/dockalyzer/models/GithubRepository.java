@@ -17,8 +17,8 @@ public class GithubRepository {
     public long watchers_count;
     public long stargazers_count;
     public long forks_count;
-    public long open_issues_count;
     public dockalyzer.models.Owner owner;
+    public boolean fork;
 
 }
 

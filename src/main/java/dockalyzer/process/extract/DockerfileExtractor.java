@@ -4,11 +4,13 @@ import dockalyzer.app.App;
 import dockalyzer.models.SQL.Diff;
 import dockalyzer.models.SQL.Dockerfile;
 import dockalyzer.models.SQL.Snapshot;
+import dockalyzer.process.output.JsonPrinter;
 import dockalyzer.services.HibernateService;
 import dockalyzer.tools.dockerparser.DockerParser;
 import dockalyzer.tools.githubminer.DiffProcessor;
 import dockalyzer.tools.githubminer.GitCloner;
 import dockalyzer.tools.githubminer.GitHistoryFilter;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -43,10 +45,11 @@ public class DockerfileExtractor  implements Runnable{
     int stargazers;
     int subscribers;
     int size;
+    boolean fork;
 
     public DockerfileExtractor(String githubId, String repo_name, String dockerPath,
                                String gitURL, String firstCommitDate, int network, int openIssues, String ownerType,
-                               int forks, int watchers, int stargazers, int subscribers, int size) {
+                               int forks, int watchers, int stargazers, int subscribers, int size, boolean fork) {
         this.githubId = githubId;
         this.repo_name =repo_name;
         this.dockerPath = dockerPath;
@@ -60,6 +63,7 @@ public class DockerfileExtractor  implements Runnable{
         this.stargazers = stargazers;
         this.subscribers = subscribers;
         this.size = size;
+        this.fork = fork;
 
         Thread thread = new Thread(this);
         thread.start();
@@ -71,7 +75,7 @@ public class DockerfileExtractor  implements Runnable{
         this.running = true;
         try {
             //this.getProcessOutput(this.remotePath, this.localPath);
-            saveDockerObject( this.githubId,
+            saveDockerObject(this.githubId,
             this.repo_name,
             this.dockerPath,
             this.gitURL ,
@@ -83,7 +87,8 @@ public class DockerfileExtractor  implements Runnable{
             this.watchers ,
             this.stargazers ,
             this.subscribers ,
-            this.size);
+            this.size,
+                    this.fork);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,7 +98,7 @@ public class DockerfileExtractor  implements Runnable{
 
     public static void saveDockerObject(String githubId, String repo_name, String dockerPath,
                                         String gitURL, String firstCommitDate, int network, int openIssues, String ownerType,
-                                        int forks, int watchers, int stargazers, int subscribers, int size) {
+                                        int forks, int watchers, int stargazers, int subscribers, int size, boolean fork) {
         try {
             System.out.println("4##################################################################################################");
             System.out.println("1. Start with: " + gitURL + " + "+  repo_name+ " + " +dockerPath);
@@ -104,6 +109,9 @@ public class DockerfileExtractor  implements Runnable{
             GitCloner gitCloner = new GitCloner();
             System.out.println("2. Clone Repo");
             gitCloner.cloneRepository(gitURL, repoFolderName);
+
+            File fileToCheck = new File(repoFolderName +"\\"  + dockerPath);
+            System.out.println("DOES IT EXIST? = :" + fileToCheck.exists());
 
             System.out.println("3. Get History of Repo");
 
@@ -131,6 +139,7 @@ public class DockerfileExtractor  implements Runnable{
             dockerfile.setFirstCommitDate(Long.valueOf(firstCommitDate));
             dockerfile.setForks(forks);
             dockerfile.setSize(size);
+            dockerfile.setFork(fork);
             dockerfile.setNetworkCount(network);
             dockerfile.setRepoPath(repo_name);
             dockerfile.setStargazers(stargazers);
@@ -181,42 +190,22 @@ public class DockerfileExtractor  implements Runnable{
             }
 
             System.out.println("8. Map Diffs with Snapshots");
-            if (dockerfile.getDockerfileSnapshots().size() > 0) {
-                for (int i = 0; i < dockerfile.getDockerfileSnapshots().size(); i++) {
-                    Diff prevDiff;
-                    Diff nextDiff;
-                    boolean foundFlag = false;
+            for (int i = 0; i < dockerfile.getDockerfileSnapshots().size(); i++) {
+                Diff prevDiff = null;
+                if (i == 0) {
+                    prevDiff = DiffProcessor.getDiff(null, dockerfile.getDockerfileSnapshots().get(0));
+                } else {
+                    prevDiff = DiffProcessor.getDiff(dockerfile.getDockerfileSnapshots().get(i - 1), dockerfile.getDockerfileSnapshots().get(i));
+                }
+                dockerfile.getDockerfileSnapshots().get(i).setOldDiff(prevDiff);
+            }
 
-                    while (!foundFlag) {
-                        if (dockerfile.getDockerfileSnapshots().size() == 1) {
-                            prevDiff = DiffProcessor.getDiff(null, dockerfile.getDockerfileSnapshots().get(0));
-                            nextDiff = null;
-                            dockerfile.getDockerfileSnapshots().get(i).setNewAndOldDiff(prevDiff,nextDiff);
-                            foundFlag = true;
-                        } else {
-                            if (i == 0 && dockerfile.getDockerfileSnapshots().size()> (i+1)) {
-                                prevDiff = DiffProcessor.getDiff(null, dockerfile.getDockerfileSnapshots().get(i));
-                                nextDiff = DiffProcessor.getDiff(dockerfile.getDockerfileSnapshots().get(i), dockerfile.getDockerfileSnapshots().get(i+1));
-                                dockerfile.getDockerfileSnapshots().get(i).setNewAndOldDiff(prevDiff,nextDiff);
-                                foundFlag = true;
-                            } else {
-                                if(i>0 && dockerfile.getDockerfileSnapshots().size()> (i+1)){
-                                    prevDiff = DiffProcessor.getDiff(dockerfile.getDockerfileSnapshots().get(i-1), dockerfile.getDockerfileSnapshots().get(i));
-                                    nextDiff = DiffProcessor.getDiff(dockerfile.getDockerfileSnapshots().get(i), dockerfile.getDockerfileSnapshots().get(i+1));
-                                    dockerfile.getDockerfileSnapshots().get(i).setNewAndOldDiff(prevDiff,nextDiff);
-                                    foundFlag = true;
-                                }else{
-                                    if(i>0){
-                                        prevDiff = DiffProcessor.getDiff(dockerfile.getDockerfileSnapshots().get(i-1), dockerfile.getDockerfileSnapshots().get(i));
-                                        nextDiff = null;
-                                        dockerfile.getDockerfileSnapshots().get(i).setNewAndOldDiff(prevDiff,nextDiff);
-                                        foundFlag = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
+            for (int i = 0; i < dockerfile.getDockerfileSnapshots().size()-1; i++) {
+                Diff nextDiff = null;
+                if (dockerfile.getDockerfileSnapshots().size() == 1) {
+                }else {
+                    nextDiff = dockerfile.getDockerfileSnapshots().get(i + 1).getDiffs().get(0);
+                    dockerfile.getDockerfileSnapshots().get(i).setNewDiff(nextDiff);
                 }
             }
 
@@ -224,20 +213,87 @@ public class DockerfileExtractor  implements Runnable{
             System.out.println("## HIBERNATESERVICE: INSERT Dockerfile Object");
             HibernateService.createDockerfile(dockerfile);
 
-            // JsonElement json = JsonPrinter.getJsonObject(dockerFile, String.valueOf(dockerFile.repo_id));
-            //  System.out.println(JsonPrinter.getJsonString(json));
-            // getDockerfileFromCommit(historyOfFile.get(1),repository,dockerPath,repoFolderName);
+             //JsonElement json = JsonPrinter.getJsonObject(dockerFile, String.valueOf(dockerFile.repo_id));
+            //System.out.println(JsonPrinter.getJsonString(json));
+            //getDockerfileFromCommit(historyOfFile.get(1),repository,dockerPath,repoFolderName);
             System.out.println("1##################################################################################################");
             //   showDiffFilesOfHistory(historyOfFile, repository,git);
             System.out.println("2##################################################################################################");
             // DiffProcessor.showDiffbetweenTwoFiles(historyOfFile.get(1), historyOfFile.get(0), dockerPath, repository, git);
             //    CommitProcessor.getChangedFilesWithinCommit(historyOfFile.get(0), repository);
-
-
             repository.close();
+            reVwalk.close();
             git.close();
+            git.getRepository().close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+
+        File folder = new File(App.LOCAL_REPO_FOLDER+"\\"+String.valueOf(githubId));
+       // FileUtils.forceDelete(folder);
+/*
+
+        File folder = new File(App.LOCAL_REPO_FOLDER + String.valueOf(githubId));
+        try {
+            FileUtils.cleanDirectory(folder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+    }
+
+    static public boolean deleteDirectory(File path) {
+        if( path.exists() ) {
+            File[] files = path.listFiles();
+            for(int i=0; i<files.length; i++) {
+                if(files[i].isDirectory()) {
+                    deleteDirectory(files[i]);
+                }
+                else {
+                    files[i].delete();
+                }
+            }
+        }
+        return( path.delete() );
+    }
+
+    public static void delete(File file)
+            throws IOException{
+
+        if(file.isDirectory()){
+
+            //directory is empty, then delete it
+            if(file.list().length==0){
+
+                file.delete();
+                System.out.println("Directory is deleted : "
+                        + file.getAbsolutePath());
+
+            }else{
+
+                //list all the directory contents
+                String files[] = file.list();
+
+                for (String temp : files) {
+                    //construct the file structure
+                    File fileDelete = new File(file, temp);
+
+                    //recursive delete
+                    delete(fileDelete);
+                }
+
+                //check the directory again, if empty then delete it
+                if(file.list().length==0){
+                    file.delete();
+                    System.out.println("Directory is deleted : "
+                            + file.getAbsolutePath());
+                }
+            }
+
+        }else{
+            //if file, then delete it
+            file.delete();
+            System.out.println("File is deleted : " + file.getAbsolutePath());
         }
     }
 

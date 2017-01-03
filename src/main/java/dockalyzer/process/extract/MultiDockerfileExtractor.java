@@ -32,10 +32,10 @@ public class MultiDockerfileExtractor {
 
     public void runThread(String githubId, String repo_name, String dockerPath,
                           String gitURL, String firstCommitDate, int network, int openIssues, String ownerType,
-                          int forks, int watchers, int stargazers, int subscribers, int size) {
+                          int forks, int watchers, int stargazers, int subscribers, int size, boolean fork) {
         dockerfileExtractors.add(new DockerfileExtractor(githubId, repo_name, dockerPath,
                 gitURL, firstCommitDate, network, openIssues, ownerType,
-                forks, watchers, stargazers, subscribers, size));
+                forks, watchers, stargazers, subscribers, size, fork));
     }
 
 

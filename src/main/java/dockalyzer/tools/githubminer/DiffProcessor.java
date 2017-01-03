@@ -68,87 +68,6 @@ public class DiffProcessor {
         return generatedDiff;
     }
 
-   /* public static Diff getGenerateDiff(String fileName) throws IOException {
-        Diff diff = new Diff();
-        File diffFile = new File(fileName);
-
-        FileInputStream fis = new FileInputStream(diffFile);
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-        String line = null;
-        String newLine = null;
-
-        boolean changeFlag = false;
-
-        boolean emptyStart = false;
-        boolean emptyEnd  =false;
-
-        String deletetText ="";
-        String insertetText= "";
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
-            if(line.contains("--- ") || line.contains("+++ ") || line.startsWith("diff ") || line.startsWith("index " )|| line.startsWith("@" )){
-            // ignore
-            }else{
-                if (line.contains("\t")){
-                    line = line.replaceFirst("\t"," ");
-                }
-                if (line.contains("/golang/vab820-quad/alpine/1.7/slim/Dockerfile")){
-                    line = line.replaceFirst("\t"," ");
-                }
-                if(line.startsWith("-")){
-                    if(!changeFlag){
-                        //new change
-                        changeFlag = true;
-                        emptyStart = true;
-                        deletetText += line.replaceFirst("-","");
-                    }else{
-                        deletetText += line.replaceFirst("-","");
-                    }
-
-                }else if(line.startsWith("+")){
-                    if(!changeFlag){
-                        //new change
-                        changeFlag = true;
-                        emptyStart = true;
-                        insertetText += line.replaceFirst("\\+","");
-                    }else{
-                        //continoue change
-                        insertetText += line.replaceFirst("\\+","");
-                    }
-                    //deletion
-                }else{
-                    if(emptyStart && changeFlag){
-                        emptyEnd  = true;
-                    }
-                }
-            }
-            if(emptyStart && emptyEnd){
-
-            //Object Creation
-                if(deletetText.length() >0 && insertetText.length() >0){
-                    diff.deletionsInsertions.add(new DeletionInsertion(diff,deletetText,insertetText,""));
-                }else if(deletetText.length() >0 && insertetText.length() ==0){
-                    diff.deletionsOnly.add(new DeletionOnly(diff,deletetText,""));
-
-                }else if(deletetText.length()==0 && insertetText.length() >0){
-                    diff.insertionsOnly.add(new InsertionOnly(diff,insertetText,""));
-
-                }
-                changeFlag = false;
-                emptyEnd  =false;
-                emptyStart  =false;
-                deletetText ="";
-                insertetText= "";
-            }
-
-
-        }
-
-        reader.close();
-        return diff;
-    }*/
-
     public static AbstractTreeIterator prepareTreeParser(Repository repository, RevTree tree) throws IOException {
         // from the commit we can build the tree which allows us to construct the TreeParser
         //noinspection Duplicates
@@ -172,14 +91,6 @@ public class DiffProcessor {
             return null;
         }
     }
-
-    /* public static void parseDiffEntry(String string){
-         Matcher m = MY_PATTERN.matcher("FOO[BAR]");
-         while (m.find()) {
-             String s = m.group(1);
-             // s now contains "BAR"
-         }
-     }*/
     public static void findFile(String name, RevCommit commit, Repository repository) throws IOException {
         ObjectId lastCommitId = repository.resolve(Constants.HEAD);
 

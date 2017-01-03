@@ -18,6 +18,7 @@ import dockalyzer.tools.githubminer.DiffProcessor;
 import dockalyzer.tools.githubminer.GitCloner;
 import dockalyzer.tools.githubminer.GitHistoryFilter;
 import dockalyzer.tools.githubminer.MultiGitCloner;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -35,12 +36,11 @@ public class App {
 
     public final static String GITAPI = "https://api.github.com/";
     public final static String REPOS = "repos/";
-    public final static String LOCAL_REPO_FOLDER = "github_repos/";
+    public final static String LOCAL_REPO_FOLDER_OLD = "github_repos/";
+    public final static String LOCAL_REPO_FOLDER = "github_repos2/";
 
-    public final static String GITHUB_USERNAME = "*";
-    public final static String GITHUB_PASSWORD = "*";
-
-
+    public final static String GITHUB_USERNAME = "SaliZumberi";
+    public final static String GITHUB_PASSWORD = "zymedia123456789";
 
 
     private final static ArrayList<Integer> months = new ArrayList<>();
@@ -51,6 +51,9 @@ public class App {
     public static void main(String[] args) throws Exception {
         java.util.logging.Logger.getLogger("org.eclipse.jgit.errors.MissingObjectException").setLevel(Level.SEVERE);
         App repositoryMinerApp = new App();
+
+        GithubRepository g = GitHubMinerService.getGitHubRepository("https://api.github.com/repos/ncdc/kubernetes");
+
 
         //repositoryMinerApp.findFile(historyOfFile.get(0));
 
@@ -173,7 +176,7 @@ public class App {
     }
 
     public static void extractDataMultiThread(int threads) throws Exception {
-        CsvListReader reader = new CsvListReader(new FileReader(new File("bigquerydata\\random_sample_.csv")), CsvPreference.STANDARD_PREFERENCE);
+        CsvListReader reader = new CsvListReader(new FileReader(new File("bigquerydata\\fork\\test.csv")), CsvPreference.STANDARD_PREFERENCE);
 
         MultiDockerfileExtractor multiDockerfileExtractor = new MultiDockerfileExtractor();
         boolean threadFlag = true;
@@ -190,18 +193,25 @@ public class App {
                         threadFlag = true;
                     }
                 }
-            } else if (multiDockerfileExtractor.runningThreads() < threads) {
+            } else if (multiDockerfileExtractor.runningThreads() < threads) {/*
+                public void runThread(0 githubId, 1 repo_name, 2 dockerPath,
+                        3 gitURL, 4 firstCommitDate, 5 network, 6 openIssues, 8 ownerType,
+                9 forks, 10 watchers, 11 stargazers, 12 subscribers, 13 size, 14 fork) {
+            githubRepo.id;repo_name;dockerpath;git_url;unixTime;network_count;open_issues;owner_id;owner_type;forks_count;watchers_count;stargazers_count;subscribers_count;size;fork
+
+                }*/
                 String[] split = columns.get(0).split(";");
-                if (split.length == 16) {
+                if (split.length == 15) {
                     multiDockerfileExtractor.runThread(split[0], split[1], split[2], split[3], split[4],
                             Integer.parseInt(split[5]),
                             Integer.parseInt(split[6]),
-                            split[9], Integer.parseInt(split[10]),
+                            split[8], Integer.parseInt(split[9]),
+                            Integer.parseInt(split[10]),
                             Integer.parseInt(split[11]),
                             Integer.parseInt(split[12]),
                             Integer.parseInt(split[13]),
-                            Integer.parseInt(split[14]));
-                    Thread.sleep(3000);
+                            Boolean.parseBoolean(split[14]));
+                    Thread.sleep(1000);
                 }
             }
         }
@@ -227,6 +237,7 @@ public class App {
                         Integer.parseInt(split[12]),
                         Integer.parseInt(split[13]),
                         Integer.parseInt(split[14]));
+
             }
         }
         reader.close();
@@ -243,9 +254,14 @@ public class App {
             String repoFolderName = LOCAL_REPO_FOLDER + String.valueOf(githubId);
             String repoFolderNameDotGit = repoFolderName + "\\.git";
 
+
+
             GitCloner gitCloner = new GitCloner();
             System.out.println("2. Clone Repo");
             gitCloner.cloneRepository(gitURL, repoFolderName);
+
+            File fileToCheck = new File(repoFolderName +  dockerPath);
+            System.out.println("DOES IT EXIST? = :" + fileToCheck.exists());
 
             System.out.println("3. Get History of Repo");
 

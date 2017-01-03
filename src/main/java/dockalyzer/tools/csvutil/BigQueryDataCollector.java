@@ -21,8 +21,8 @@ public class BigQueryDataCollector {
     private final static String LOCAL_REPO_FOLDER = "github_repos/";
 
     public static void main(String[] args) throws Exception {
-        CsvListReader reader = new CsvListReader(new FileReader(new File("bigquerydata\\data_8.csv")), CsvPreference.STANDARD_PREFERENCE);
-        CsvListWriter writer = new CsvListWriter(new FileWriter(new File("bigquerydata\\data_88.csv"),true), CsvPreference.STANDARD_PREFERENCE);
+        CsvListReader reader = new CsvListReader(new FileReader(new File("bigquerydata\\data_1.csv")), CsvPreference.STANDARD_PREFERENCE);
+        CsvListWriter writer = new CsvListWriter(new FileWriter(new File("bigquerydata\\data_111.csv"),true), CsvPreference.STANDARD_PREFERENCE);
 
         List<String> columns;
         int i = 0;
@@ -40,6 +40,7 @@ public class BigQueryDataCollector {
                 String[] split = columns.get(0).split(";");
                 String key = split[0];
 
+
                 GithubRepository githubRepo = GitHubMinerService.getGitHubRepository(GITAPI + REPOS + key);
                 Date created_at = DateExtractor.getDateFromJsonString(githubRepo.created_at);
                 long unixTime = (long) created_at.getTime()/1000;
@@ -48,7 +49,6 @@ public class BigQueryDataCollector {
                 columns.add(String.valueOf(unixTime));
                 columns.add(String.valueOf(githubRepo.network_count));
                 columns.add(String.valueOf(githubRepo.open_issues));
-                columns.add(String.valueOf(githubRepo.open_issues_count));
                 columns.add(String.valueOf(githubRepo.owner.id));
                 columns.add(String.valueOf(githubRepo.owner.type));
                 columns.add(String.valueOf(githubRepo.forks_count));
@@ -56,8 +56,7 @@ public class BigQueryDataCollector {
                 columns.add(String.valueOf(githubRepo.stargazers_count));
                 columns.add(String.valueOf(githubRepo.subscribers_count));
                 columns.add(String.valueOf(githubRepo.size));
-                columns.add(String.valueOf(githubRepo.id));
-
+                columns.add(String.valueOf(githubRepo.fork));
                 writer.write(columns);
             }catch (Exception e){
 

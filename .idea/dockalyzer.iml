@@ -31,8 +31,8 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/bigquerydata" />
-      <excludeFolder url="file://$MODULE_DIR$/dockerfiles" />
       <excludeFolder url="file://$MODULE_DIR$/github_repos" />
+      <excludeFolder url="file://$MODULE_DIR$/github_repos2" />
       <excludeFolder url="file://$MODULE_DIR$/src/main/resources" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

@@ -21,18 +21,23 @@ public class OnBuild extends Instruction{
     @JoinColumn(name ="SNAP_ID")
     Snapshot snapshot;
 
-    //@OneToOne(fetch = FetchType.EAGER, cascade=CascadeType.ALL, mappedBy = "snapshot")
-    //Object instruction;
-
     @Column(name = "current", nullable = false)
     public boolean current;
 
-    public OnBuild(Snapshot snapshot, Instruction instruction) {
+    @Column(name = "instruction", nullable = false)
+    public String instruction;
+
+    @Column(name = "instruction_params", nullable = false)
+    public String allParams;
+
+    public OnBuild(Snapshot snapshot, String instruction, String allParams) {
         super();
         this.snapshot = snapshot;
-       // this.instruction = instruction;
+        this.instruction =instruction;
+        this.allParams=allParams;
     }
 
     public OnBuild() {
+
     }
 }

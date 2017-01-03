@@ -130,7 +130,7 @@ public class DockerParser {
             if (line.startsWith("#")) {
                 String tempLine = line;
                 tempLine  = tempLine.replaceFirst("#","");
-                
+
                 if(checkForInstruction(tempLine)){
                     boolean outCommInstruction = true;
                     Comment c = new Comment(snapshot, "commented out: " + getInstructionInString(tempLine),tempLine);
@@ -175,6 +175,7 @@ public class DockerParser {
             }
         }
         reader.close();
+        fis.close();
 
         if(comments.size()>0){
             return comments;
@@ -183,9 +184,10 @@ public class DockerParser {
     }
     public File getFlatDockerFile(File dockerFile) throws IOException {
         File flatDockerfile = new File(dockerFile.getParentFile().getPath() + "\\DockerFileFlat");
-        if(!flatDockerfile.exists()){
-            flatDockerfile = this.findFile("Dockerfile",new File(this.localPath + "/" + this.localDockerfilePath) );
-        }
+        /*if(!flatDockerfile.createNewFile()){
+            flatDockerfile = this.findFile("DockerFileFlat",new File(this.localPath + "/" + this.localDockerfilePath) );
+        }*/
+
         BufferedWriter writer = new BufferedWriter(new FileWriter(flatDockerfile));
         FileInputStream fis = new FileInputStream(dockerFile);
 
@@ -193,6 +195,7 @@ public class DockerParser {
         BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
         String line = null;
         String newLine = null;
+        boolean hc = false;
         boolean concatFlag = false;
         while ((line = reader.readLine()) != null) {
             if (doesLineHaveAnInstruction(line) && line.contains(" \\")) {
@@ -201,6 +204,9 @@ public class DockerParser {
                 concatFlag = true;
             } else if (line.contains(" \\") && concatFlag) {
                 newLine += line;
+            } else if (newLine != null && newLine.contains("HEALTHCHECK") && !hc) {
+                newLine += line;
+                hc = true;
             } else if (!doesLineHaveAnInstruction(line) && !line.contains(" \\") && concatFlag) {
                 newLine += line;
                 newLine = newLine.replace(" \\", "");
@@ -216,6 +222,8 @@ public class DockerParser {
         }
         writer.close();
         reader.close();
+        fis.close();
+
         return flatDockerfile;
     }
 
@@ -510,11 +518,21 @@ public class DockerParser {
     }
 
     private Instruction parseHealthCheckInstruction(String command) {
-        if (command.equals("NONE")) {
-        } else {
-            healthcheck = new Healthcheck(dockerfile, getClassification(command));
+        Healthcheck hc= null;
+        String instruction = getInstructionInString(command);
+
+        String[] split = command.split(" ",2);
+        if(checkForInstruction(split[0]) && split.length>0){
+            hc = new Healthcheck(dockerfile, instruction,split[1]);
+        }else{
+            int index = command.indexOf(instruction);
+            String paramter = command.substring(0, index);
+            String fullInstruction = command.substring(index);
+            String[] fullInstructions = fullInstruction.split(" ",2);
+            hc = new Healthcheck(dockerfile,instruction,paramter, fullInstructions[1]);
         }
-        return new Healthcheck(dockerfile, getClassification(command));
+        healthcheck = hc;
+        return hc;
     }
 
     private Instruction parseCMDInstruction(String command) {
@@ -557,7 +575,6 @@ public class DockerParser {
     }
 
     private Instruction parseStopSignalInstruction(String signal) {
-        //stopSignals.add(new StopSignal(dockerfile,signal));
         stopSignal = new StopSignal(dockerfile, signal);
 
         return new StopSignal(dockerfile, signal);
@@ -566,17 +583,18 @@ public class DockerParser {
     }
 
     private Instruction parseArgInstruction(String arg) {
-        args.add(new Arg(arg));
-        return new Arg(arg);
+        args.add(new Arg(dockerfile,arg));
+        return new Arg(dockerfile,arg);
 
     }
 
     private Instruction parseRunInstruction(String commandx) {
+
         String command = commandx;
-        if(commandx.contains("(")){
+        if (commandx.contains("(") && !commandx.contains("echo ")) {
             Matcher m = Pattern.compile("\\(([^)]+)\\)").matcher(commandx);
-            while(m.find()) {
-                command  =m.group(1);
+            while (m.find()) {
+                command = m.group(1);
             }
         }
 
@@ -586,34 +604,43 @@ public class DockerParser {
             String executable = "";
             List<String> params = new ArrayList<>();
 
-            if (command.contains("[")) {
-                Pattern p = Pattern.compile("\"(.*?)\"");
-                Matcher m = p.matcher(command);
-
-                List<String> matches = new ArrayList<String>();
-                while (m.find()) {
-                    matches.add(m.group(1));
+            if (commandx.contains("echo")) {
+                executable = "echo";
+                String arr[] = commandx.split(" ", 2);
+                for (int i = 0; i < arr.length; i++) {
+                    params.add(arr[i]);
                 }
 
-                for (int i = 0; i < matches.size(); i++) {
-                    if (i == 0) {
-                        executable = matches.get(i);
-                    } else {
-                        params.add(matches.get(i));
+            }else{
+                if (command.contains("[")) {
+                    Pattern p = Pattern.compile("\"(.*?)\"");
+                    Matcher m = p.matcher(command);
+
+                    List<String> matches = new ArrayList<String>();
+                    while (m.find()) {
+                        matches.add(m.group(1));
                     }
-                }
-            }else {
-                String[] parts = run.split(" ");
 
-                for (int i = 0; i < parts.length; i++) {
-                    if (i == 0) {
-                        executable = parts[i];
-
-                    } else {
-                        params.add(parts[i]);
+                    for (int i = 0; i < matches.size(); i++) {
+                        if (i == 0) {
+                            executable = matches.get(i);
+                        } else {
+                            params.add(matches.get(i));
+                        }
                     }
-                }
+                }else {
+                    String[] parts = run.split(" ");
 
+                    for (int i = 0; i < parts.length; i++) {
+                        if (i == 0) {
+                            executable = parts[i];
+
+                        } else {
+                            params.add(parts[i]);
+                        }
+                    }
+
+                }
             }
             if(executable.length()>0){
                 runs.add(new Run(dockerfile, executable, params));
@@ -647,8 +674,15 @@ public class DockerParser {
     }
 
     private Instruction parseOnBuildInstruction(String command) {
-        onBuilds.add(new OnBuild(dockerfile, getClassification(command)));
-        return new OnBuild(dockerfile, getClassification(command));
+        OnBuild onBuild= null;
+        String instruction = getInstructionInString(command);
+
+        String[] split = command.split(" ",2);
+        if(checkForInstruction(split[0]) && split.length>0){
+            onBuild = new OnBuild(dockerfile, instruction,split[1]);
+        }
+        onBuilds.add(onBuild);
+        return onBuild;
     }
 
     private Instruction parseUserInstruction(String command) {
@@ -708,20 +742,20 @@ public class DockerParser {
         }
         return from;
     }
-    
+
 
     public String getStringFromRegexPattern(String patternInput, String data) {
         Pattern pattern = Pattern.compile(patternInput);
         Matcher matcher = pattern.matcher(data);
-       try {
-           if (matcher.find()) {
-             //  System.out.println("getStringFromRegexPattern" + matcher.group(0));
-           }
-           return matcher.group(0);
-       }catch (Exception e){
-           e.printStackTrace();
-           return "";
-       }
+        try {
+            if (matcher.find()) {
+                //  System.out.println("getStringFromRegexPattern" + matcher.group(0));
+            }
+            return matcher.group(0);
+        }catch (Exception e){
+            e.printStackTrace();
+            return "";
+        }
     }
 
     public File findFile(String name, File path) {
@@ -745,7 +779,6 @@ public class DockerParser {
         dockerfile.entryPoint = entryPoint;
         dockerfile.stopSignals = stopSignal;
         dockerfile.healthCheck = healthcheck;
-
 
         dockerfile.runs = this.runs;
         dockerfile.labels = this.labels;

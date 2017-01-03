@@ -20,42 +20,41 @@ public class Healthcheck extends Instruction{
     @GenericGenerator(name = "healthcheck_gen", strategy = "foreign",
             parameters = @org.hibernate.annotations.Parameter(name = "property", value = "snapshot"))
     private long id;
-/*    @Id
-    @Column(name="REPO_ID", unique=true, nullable=false)
-    private long id;*/
-
 
     @OneToOne(cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     Snapshot snapshot;
 
-    //@OneToOne(fetch = FetchType.EAGER, cascade=CascadeType.ALL, mappedBy = "snapshot")
-   // Instruction healthInstruction;
-
-    @ElementCollection
-    @CollectionTable(name="option_params", joinColumns=@JoinColumn(name="RUN_ID"))
-    @Column(name="option_params")
-    List<String> optionsBeforeInstructions = new ArrayList<>();
+    @Column(name = "options_params", nullable = false)
+    String optionsBeforeInstructions;
 
     @Column(name = "current", nullable = false)
     public boolean current;
 
-    public Healthcheck(Snapshot snapshot,Instruction instruction) {
+    @Column(name = "instruction", nullable = false)
+    public String instruction;
+
+    @Column(name = "instruction_params", nullable = false)
+    public String allParams;
+
+    public Healthcheck(Snapshot snapshot, String instruction, String allParams) {
         super();
         this.snapshot = snapshot;
-       // this.healthInstruction =instruction;
+        this.instruction =instruction;
+        this.allParams=allParams;
     }
 
-    public Healthcheck(List<String> optionsBeforeInstructions) {
+    public Healthcheck(String optionsBeforeInstructions) {
         super();
         this.optionsBeforeInstructions =optionsBeforeInstructions;
     }
 
-    public Healthcheck(Snapshot snapshot, Instruction instruction, List<String> optionsBeforeInstructions) {
+    public Healthcheck(Snapshot snapshot, String instruction, String optionsBeforeInstructions, String allParams) {
         super();
         this.snapshot = snapshot;
-       // this.healthInstruction =instruction;
+        this.instruction =instruction;
         this.optionsBeforeInstructions =optionsBeforeInstructions;
+        this.allParams=allParams;
     }
 
     public Healthcheck() {
